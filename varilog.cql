@@ -23,9 +23,9 @@ CREATE TABLE varilog.md_data(
 
 -- Allow querying by device/property#field
 -- These are 'lightweight' timeseries
-CREATE INDEX device_idx ON md_data(device);
-CREATE INDEX property_idx ON md_data(property);
-CREATE INDEX field_idx ON md_data(field);
+CREATE INDEX device_idx ON varilog.md_data(device);
+CREATE INDEX property_idx ON varilog.md_data(property);
+CREATE INDEX field_idx ON varilog.md_data(field);
 
 -- Maintain cycles count for each MD 
 CREATE TABLE varilog.md_cycles_count(
@@ -35,7 +35,7 @@ CREATE TABLE varilog.md_cycles_count(
 	PRIMARY KEY ((name), tag)
 );
 
--- Timeseries a la Timber
+-- Timeseries
 CREATE TABLE varilog.timeseries(
 	id                UUID,
 	type              TEXT STATIC,
