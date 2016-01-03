@@ -1,13 +1,15 @@
 import os
+import getpass
 from datetime import datetime
 import click
 from cassandra.cluster import Cluster
 import varilog.converters.matlab
 
 @click.group()
-@click.option('--debug/--no-debug', default=False)
+@click.option('--debug/--no-debug', default=False, help='Set the Verbosity of the output')
 @click.option('--username', prompt=True, required=True,
-              default=lambda: os.environ.get('VARILOG_USERNAME', ''))
+              default=lambda: getpass.getuser(), 
+              help='Will default to the current username')
 @click.pass_context
 def cli(ctx, debug, username):
     if debug:
@@ -25,7 +27,7 @@ def info():
     cluster = Cluster()
     session = cluster.connect('varilog')
     rows = session.execute("""
-    SELECT COUNT(*) FROM md_data
+    SELECT COUNT(*) FROM md_info
     """)
     for r in rows:
         print(r)
@@ -39,28 +41,29 @@ def md():
     
 @md.command()
 @click.argument('name', required=True)
-@click.argument('tag', required=True)
 @click.option('--comment', prompt=True, required=True)
-@click.confirmation_option(help='Are you sure you want to create a new MD?')
+#@click.confirmation_option(help='Are you sure you want to create a new MD?')
 @click.pass_context
-def create(ctx, name, tag, comment):
+def create(ctx, name, comment):
     """Create new MD.
     
+    Check if MD name already exists.
+    If not, create a new one with a comment and
+    add time and user information.
     """
     cluster = Cluster()
     session = cluster.connect('varilog')
     rows = session.execute("""
-    SELECT DISTINCT name, tag FROM md_data
-    """)
+    SELECT name FROM md_info WHERE name = %s
+    """, (name,))
     exists = False
-    for r in rows:
-        if r[0] == name:
-            exists = True
+    if len(rows.current_rows) is not 0:
+        exists = True
     if not exists:
         stamp = datetime.now()
         session.execute("""
-        INSERT INTO md_data(name, tag, comment, created_at, users) VALUES(%s, %s, %s, %s, {%s})
-        """, (name, tag, comment, stamp, ctx.obj['username']))
+        INSERT INTO md_info(name, md_comment, created, users) VALUES(%s, %s, %s, {%s})
+        """, (name, comment, stamp, ctx.obj['username']))
         click.echo("MD created at %s" % stamp)
     else:
         click.echo("This MD already exists!")
@@ -69,34 +72,41 @@ def create(ctx, name, tag, comment):
 @click.argument('name', required=True)
 @click.argument('tag', required=True)
 @click.option('--comment', prompt=True, required=True)
-@click.confirmation_option(help='Are you sure you want to add a new tag?')
+#@click.confirmation_option(help='Are you sure you want to add a new tag?')
 @click.pass_context
 def tag(ctx, name, tag, comment):
     """Add a tag to an existing MD.
     
+    Find the corresponding MD by name.
+    If found, check if the tag already exists,
+    if not, create a new tag with a comment and
+    add time information.
     """
     cluster = Cluster()
     session = cluster.connect('varilog')
     rows = session.execute("""
-    SELECT DISTINCT name, tag FROM md_data
-    """)
+    SELECT name FROM md_info WHERE name = %s
+    """, (name,))
     md_exists = False
+    if len(rows.current_rows) is not 0:
+        md_exists = True
+    if not md_exists:
+        click.echo("This MD does not exist, 'create' it first.")
+        exit()
+        
+    rows = session.execute("""
+    SELECT name FROM md_info WHERE name = %s and tag = %s
+    """, (name, tag))
     tag_exists = False
-    users = None
-    for r in rows:
-        if r[0] == name:
-            md_exists = True
-        if r[0] == name and r[1] == tag:
-            tag_exists = True
-    if md_exists and not tag_exists:
-        stamp = datetime.now()
-        session.execute("""
-        INSERT INTO md_data(name, tag, comment, created_at, users) VALUES(%s, %s, %s, %s, {%s})
-        """, (name, tag, comment, stamp, ctx.obj['username']))
-    elif md_exists and tag_exists:
+    if len(rows.current_rows) is not 0:
+        tag_exists = True
+    if tag_exists:
         click.echo("This tag already exists!")
-    else:
-        click.echo("This MD doesn't exist, 'create' it first.")
+        exit()
+    stamp = datetime.now()
+    session.execute("""
+    INSERT INTO md_info(name, tag, tag_comment, tag_created, cycle) VALUES(%s, %s, %s, %s, NOW())
+    """, (name, tag, comment, stamp))
         
 @md.command()
 @click.argument('name')
@@ -104,7 +114,7 @@ def tag(ctx, name, tag, comment):
 @click.argument('path')
 @click.option('--comment', prompt=True, required=True)
 @click.option('--format', default='matlab')
-def pull(name, tag, path, comment, format):
+def push(name, tag, path, comment, format):
     if format is not 'matlab':
         click.echo("Only Matlab pulls are supported.")
         exit()
