@@ -1,0 +1,350 @@
+<KDMPROJECT>
+  <ERMODEL>
+    <mxGraphModel dx="34" dy="-24" grid="1" guides="1" tooltips="1" connect="1" fold="1" page="0" pageScale="1" pageWidth="826" pageHeight="1169">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="131" value="Cycle" style="whiteSpace=wrap" vertex="1" parent="1">
+          <mxGeometry x="270" y="129" width="40" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="132" value="Device" style="whiteSpace=wrap" vertex="1" parent="1">
+          <mxGeometry x="450" y="129" width="60" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="135" value="has" style="shape=card;whiteSpace=wrap" vertex="1" parent="1">
+          <mxGeometry x="350" y="139" width="60" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="139" value="1" style="text;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="320" y="144" width="20" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="140" value="" style="edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;entryX=0;entryY=0.5;entryPerimeter=0" edge="1" parent="1" source="139" target="135">
+          <mxGeometry width="100" height="100" relative="1" as="geometry">
+            <mxPoint x="40" y="99" as="sourcePoint"/>
+            <mxPoint x="140" y="-1" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="141" value="" style="edgeStyle=orthogonalEdgeStyle;exitX=0;exitY=0.5;entryX=1;entryY=0.5" edge="1" parent="1" source="139" target="131">
+          <mxGeometry width="100" height="100" relative="1" as="geometry">
+            <mxPoint x="40" y="99" as="sourcePoint"/>
+            <mxPoint x="140" y="-1" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="142" value="n" style="text;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="420" y="144" width="20" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="143" value="" style="edgeStyle=orthogonalEdgeStyle;exitX=0;exitY=0.5;entryX=1;entryY=0.5;entryPerimeter=0" edge="1" parent="1" source="142" target="135">
+          <mxGeometry width="100" height="100" relative="1" as="geometry">
+            <mxPoint x="40" y="99" as="sourcePoint"/>
+            <mxPoint x="140" y="-1" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="144" value="" style="edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;entryX=0;entryY=0.5" edge="1" parent="1" source="142" target="132">
+          <mxGeometry width="100" height="100" relative="1" as="geometry">
+            <mxPoint x="40" y="99" as="sourcePoint"/>
+            <mxPoint x="140" y="-1" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="145" value="cyclestamp" style="ellipse;fontStyle=0" vertex="1" parent="1">
+          <mxGeometry x="250" y="80" width="80" height="35" as="geometry"/>
+        </mxCell>
+        <mxCell id="147" value="real_value" style="ellipse" vertex="1" parent="1">
+          <mxGeometry x="910" y="199" width="80" height="35" as="geometry"/>
+        </mxCell>
+        <mxCell id="152" value="has" style="shape=card;whiteSpace=wrap" vertex="1" parent="1">
+          <mxGeometry x="750" y="139" width="60" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="153" value="has" style="shape=card;whiteSpace=wrap" vertex="1" parent="1">
+          <mxGeometry x="550" y="139" width="60" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="154" value="Property" style="whiteSpace=wrap" vertex="1" parent="1">
+          <mxGeometry x="650" y="129" width="60" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="155" value="Field" style="whiteSpace=wrap" vertex="1" parent="1">
+          <mxGeometry x="850" y="129" width="100" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="156" value="type" style="ellipse" vertex="1" parent="1">
+          <mxGeometry x="860" y="80" width="80" height="35" as="geometry"/>
+        </mxCell>
+        <mxCell id="157" value="blob_value" style="ellipse" vertex="1" parent="1">
+          <mxGeometry x="810" y="199" width="80" height="35" as="geometry"/>
+        </mxCell>
+        <mxCell id="158" value="text_value" style="ellipse" vertex="1" parent="1">
+          <mxGeometry x="860" y="238" width="80" height="35" as="geometry"/>
+        </mxCell>
+        <mxCell id="159" value="" style="edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;entryX=0.5;entryY=0" edge="1" parent="1" source="156" target="155">
+          <mxGeometry width="100" height="100" relative="1" as="geometry">
+            <mxPoint x="-60" y="112" as="sourcePoint"/>
+            <mxPoint x="40" y="12" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="161" value="" style="edgeStyle=orthogonalEdgeStyle;" edge="1" parent="1" source="158" target="155">
+          <mxGeometry width="100" height="100" relative="1" as="geometry">
+            <mxPoint x="900" y="234" as="sourcePoint"/>
+            <mxPoint x="40" y="12" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="162" value="" style="edgeStyle=orthogonalEdgeStyle;entryX=0.75;entryY=1" edge="1" parent="1" source="147" target="155">
+          <mxGeometry width="100" height="100" relative="1" as="geometry">
+            <mxPoint x="980" y="222" as="sourcePoint"/>
+            <mxPoint x="40" y="12" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="165" value="" style="edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;entryX=0.5;entryY=0" edge="1" parent="1" source="145" target="131">
+          <mxGeometry width="100" height="100" relative="1" as="geometry">
+            <mxPoint x="40" y="99" as="sourcePoint"/>
+            <mxPoint x="140" y="-1" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="166" value="1" style="text;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="520" y="144" width="20" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="167" value="n" style="text;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="620" y="144" width="20" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="168" value="1" style="text;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="720" y="144" width="20" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="169" value="n" style="text;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="820" y="144" width="20" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="170" value="" style="edgeStyle=orthogonalEdgeStyle;exitX=0;exitY=0.5;entryX=1;entryY=0.5" edge="1" parent="1" source="166" target="132">
+          <mxGeometry width="100" height="100" relative="1" as="geometry">
+            <mxPoint x="210" y="99" as="sourcePoint"/>
+            <mxPoint x="310" y="-1" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="171" value="" style="edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;entryX=0;entryY=0.5;entryPerimeter=0" edge="1" parent="1" source="166" target="153">
+          <mxGeometry width="100" height="100" relative="1" as="geometry">
+            <mxPoint x="210" y="99" as="sourcePoint"/>
+            <mxPoint x="310" y="-1" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="172" value="" style="edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;entryX=0;entryY=0.5" edge="1" parent="1" source="167" target="154">
+          <mxGeometry width="100" height="100" relative="1" as="geometry">
+            <mxPoint x="210" y="99" as="sourcePoint"/>
+            <mxPoint x="310" y="-1" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="173" value="" style="edgeStyle=orthogonalEdgeStyle;exitX=0;exitY=0.5;entryX=1;entryY=0.5;entryPerimeter=0" edge="1" parent="1" source="167" target="153">
+          <mxGeometry width="100" height="100" relative="1" as="geometry">
+            <mxPoint x="210" y="99" as="sourcePoint"/>
+            <mxPoint x="310" y="-1" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="174" value="" style="edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;entryX=0;entryY=0.5" edge="1" parent="1" source="154" target="168">
+          <mxGeometry width="100" height="100" relative="1" as="geometry">
+            <mxPoint x="210" y="99" as="sourcePoint"/>
+            <mxPoint x="310" y="-1" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="176" value="" style="edgeStyle=orthogonalEdgeStyle;exitX=0;exitY=0.5;exitPerimeter=0;entryX=1;entryY=0.5" edge="1" parent="1" source="152" target="168">
+          <mxGeometry width="100" height="100" relative="1" as="geometry">
+            <mxPoint x="210" y="99" as="sourcePoint"/>
+            <mxPoint x="310" y="-1" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="178" value="" style="edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;entryX=0;entryY=0.5" edge="1" parent="1" source="169" target="155">
+          <mxGeometry width="100" height="100" relative="1" as="geometry">
+            <mxPoint x="180" y="99" as="sourcePoint"/>
+            <mxPoint x="280" y="-1" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="179" value="" style="edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=0;entryX=0.25;entryY=1" edge="1" parent="1" source="157" target="155">
+          <mxGeometry width="100" height="100" relative="1" as="geometry">
+            <mxPoint x="180" y="99" as="sourcePoint"/>
+            <mxPoint x="280" y="-1" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="180" value="" style="edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitPerimeter=0;entryX=0;entryY=0.5" edge="1" parent="1" source="152" target="169">
+          <mxGeometry width="100" height="100" relative="1" as="geometry">
+            <mxPoint x="180" y="99" as="sourcePoint"/>
+            <mxPoint x="280" y="-1" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="190" value="md_name" style="ellipse;fontStyle=4" vertex="1" parent="1">
+          <mxGeometry x="-20" y="78" width="80" height="35" as="geometry"/>
+        </mxCell>
+        <mxCell id="217" value="md_tag" style="ellipse;fontStyle=4" vertex="1" parent="1">
+          <mxGeometry x="91" y="80" width="80" height="35" as="geometry"/>
+        </mxCell>
+        <mxCell id="222" value="MD" style="whiteSpace=wrap" vertex="1" parent="1">
+          <mxGeometry x="28" y="129" width="100" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="225" value="has" style="shape=card;whiteSpace=wrap" vertex="1" parent="1">
+          <mxGeometry x="171" y="139" width="60" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="226" value="1" style="text;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="142" y="144" width="20" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="228" value="n" style="text;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="239" y="144" width="20" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="230" value="" style="edgeStyle=orthogonalEdgeStyle;exitX=0;exitY=0.5;entryX=1;entryY=0.5" edge="1" parent="1" source="226" target="222">
+          <mxGeometry width="100" height="100" relative="1" as="geometry">
+            <mxPoint y="100" as="sourcePoint"/>
+            <mxPoint x="100" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="231" value="" style="edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;entryX=0;entryY=0.5" edge="1" parent="1" source="228" target="131">
+          <mxGeometry width="100" height="100" relative="1" as="geometry">
+            <mxPoint y="100" as="sourcePoint"/>
+            <mxPoint x="100" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="233" value="" style="edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.5;exitPerimeter=0;entryX=0;entryY=0.5" edge="1" parent="1" source="225" target="228">
+          <mxGeometry width="100" height="100" relative="1" as="geometry">
+            <mxPoint y="100" as="sourcePoint"/>
+            <mxPoint x="100" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="234" value="" style="edgeStyle=orthogonalEdgeStyle;exitX=0;exitY=0.5;exitPerimeter=0;entryX=1;entryY=0.5" edge="1" parent="1" source="225" target="226">
+          <mxGeometry width="100" height="100" relative="1" as="geometry">
+            <mxPoint y="100" as="sourcePoint"/>
+            <mxPoint x="100" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="237" value="cycles_count" style="ellipse" vertex="1" parent="1">
+          <mxGeometry x="159" y="190" width="91" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="244" value="created_at" style="ellipse" vertex="1" parent="1">
+          <mxGeometry x="91" y="230" width="91" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="246" value="" style="edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;entryX=0.25;entryY=0" edge="1" parent="1" source="190" target="222">
+          <mxGeometry width="100" height="100" relative="1" as="geometry">
+            <mxPoint y="100" as="sourcePoint"/>
+            <mxPoint x="100" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="247" value="" style="edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;entryX=0.75;entryY=0" edge="1" parent="1" source="217" target="222">
+          <mxGeometry width="100" height="100" relative="1" as="geometry">
+            <mxPoint y="100" as="sourcePoint"/>
+            <mxPoint x="100" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="248" value="" style="edgeStyle=orthogonalEdgeStyle;exitX=0;exitY=0;entryX=1;entryY=0.75" edge="1" parent="1" source="237" target="222">
+          <mxGeometry width="100" height="100" relative="1" as="geometry">
+            <mxPoint y="100" as="sourcePoint"/>
+            <mxPoint x="100" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="249" value="" style="edgeStyle=orthogonalEdgeStyle;exitX=0.75;exitY=1;entryX=0.5;entryY=0" edge="1" parent="1" source="222" target="244">
+          <mxGeometry width="100" height="100" relative="1" as="geometry">
+            <mxPoint y="100" as="sourcePoint"/>
+            <mxPoint x="100" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="250" value="users" style="ellipse;shape=doubleEllipse;whiteSpace=wrap" vertex="1" parent="1">
+          <mxGeometry x="38" y="280" width="80" height="35" as="geometry"/>
+        </mxCell>
+        <mxCell id="251" value="" style="edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=0;entryX=0.5;entryY=1" edge="1" parent="1" source="250" target="222">
+          <mxGeometry width="100" height="100" relative="1" as="geometry">
+            <mxPoint y="100" as="sourcePoint"/>
+            <mxPoint x="100" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="252" value="comment" style="ellipse" vertex="1" parent="1">
+          <mxGeometry x="-20" y="235" width="80" height="35" as="geometry"/>
+        </mxCell>
+        <mxCell id="253" value="" style="edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=0;entryX=0.25;entryY=1" edge="1" parent="1" source="252" target="222">
+          <mxGeometry width="100" height="100" relative="1" as="geometry">
+            <mxPoint y="100" as="sourcePoint"/>
+            <mxPoint x="100" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+    <KEYS_JSON>
+{}    </KEYS_JSON>
+  </ERMODEL>
+  <ACCESS_PATTERNS width="1150px" height="666px" left="23px" top="443px">
+    <Q1>
+      <APTYPE>
+simple      </APTYPE>
+      <GR>
+        <ATTRIBUTE>
+          <DIV>
+MD.md_name          </DIV>
+        </ATTRIBUTE>
+        <VRS>
+value        </VRS>
+      </GR>
+      <GR>
+        <ATTRIBUTE>
+          <DIV>
+MD.md_tag          </DIV>
+        </ATTRIBUTE>
+        <VRS>
+value        </VRS>
+      </GR>
+      <FR>
+        <ATTRIBUTE>
+          <DIV>
+Field.type          </DIV>
+        </ATTRIBUTE>
+      </FR>
+      <FR>
+        <ATTRIBUTE>
+          <DIV>
+Field.blob_value          </DIV>
+        </ATTRIBUTE>
+      </FR>
+      <FR>
+        <ATTRIBUTE>
+          <DIV>
+Field.real_value          </DIV>
+        </ATTRIBUTE>
+      </FR>
+      <FR>
+        <ATTRIBUTE>
+          <DIV>
+Field.text_value          </DIV>
+        </ATTRIBUTE>
+      </FR>
+      <DESCR>
+all_cycles_from_md      </DESCR>
+    </Q1>
+  </ACCESS_PATTERNS>
+  <LOGICAL_MODEL>
+    <Q1 qTemplate="SELECT |s|Artifact_1__title|e|, |s|Artifact_1__authors|e| FROM |s|tableName|e| WHERE |s|Artifact_0__id|e|=?;">
+      <tbl>
+        <artifacts_by_artifact/>
+        <columns>
+          <artifact_0_id origName="Artifact_0__id">
+            <K/>
+            <NOCLUST/>
+          </artifact_0_id>
+          <artifact_1_id origName="Artifact_1__id">
+            <C>
+ASC            </C>
+          </artifact_1_id>
+          <artifact_1_title origName="Artifact_1__title"/>
+          <artifact_1_authors origName="Artifact_1__authors">
+            <COLL/>
+            <NOCLUST/>
+          </artifact_1_authors>
+        </columns>
+      </tbl>
+    </Q1>
+    <Q2 qTemplate="SELECT |s|Artifact_1__id|e|, |s|Artifact_1__title|e|, |s|Artifact_1__authors|e| FROM |s|tableName|e| WHERE |s|Artifact_0__id|e|=?;">
+      <tbl>
+        <artifacts_by_artifact0/>
+        <columns>
+          <artifact_0_id origName="Artifact_0__id">
+            <K/>
+            <NOCLUST/>
+          </artifact_0_id>
+          <artifact_1_id origName="Artifact_1__id">
+            <C>
+ASC            </C>
+          </artifact_1_id>
+          <artifact_1_title origName="Artifact_1__title"/>
+          <artifact_1_authors origName="Artifact_1__authors">
+            <COLL/>
+            <NOCLUST/>
+          </artifact_1_authors>
+        </columns>
+      </tbl>
+    </Q2>
+    <LOGICAL_CONFIGEL>
+{}    </LOGICAL_CONFIGEL>
+  </LOGICAL_MODEL>
+</KDMPROJECT>
