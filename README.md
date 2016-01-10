@@ -1,7 +1,7 @@
 # varilog
 CERN Varilog 2.0
 
-User-domain persistency layer for the CERN Injectors' control system.
+User-domain persistency layer for the CERN Control System.
 
 The project's key compoenents are:
   - **Cassandra.Varilog** Data model and permanent storage based on the Apache Cassandra NoSQL database;
