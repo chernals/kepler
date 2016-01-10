@@ -2,19 +2,6 @@ CREATE KEYSPACE varilog
 	WITH replication = {'class': 'SimpleStrategy', 'replication_factor': '1'}
 	AND durable_writes = true;
 	
--- Metadata for MD's and tags
-CREATE TABLE varilog.md_info(
-	name              TEXT,
-	tag               TEXT,
-	comment           TEXT,
-	id                TIMEUUID,
-	cyclestamp        TIMESTAMP,
-	md_comment        TEXT STATIC,
-	users             SET<TEXT> STATIC,
-	created           TIMESTAMP STATIC,
-	PRIMARY KEY ((name), tag, cyclestamp)
-) WITH CLUSTERING ORDER BY (tag ASC, id DESC);
-
 -- Composed type for parameters
 -- device/property#field
 CREATE TYPE varilog.parameter (
@@ -22,31 +9,40 @@ CREATE TYPE varilog.parameter (
 	property          TEXT,
 	field             TEXT
 );
+	
+-- Metadata for MD's and tags
+CREATE TABLE varilog.md_info(
+	name              TEXT,
+	tag               TEXT,
+	id                TIMEUUID,
+	comment           TEXT,
+	cyclestamp        TIMESTAMP,
+	md_comment        TEXT STATIC,
+	users             SET<TEXT> STATIC,
+	created           TIMESTAMP STATIC,
+	PRIMARY KEY ((name), tag, id)
+) WITH CLUSTERING ORDER BY (tag ASC, id ASC);
+
+-- Allow querying by cyclestamps
+CREATE INDEX cyclestamp_idx ON varilog.md_info(cyclestamp);
 
 -- Payload data for MD's
--- Cycle and telegram infos should go in a special 'MTG' device
 CREATE TABLE varilog.md_data(
+	name              TEXT,
+	tag               TEXT,
     id                TIMEUUID,
-	cyclestamp        TIMESTAMP STATIC,
+	telegram          MAP<TEXT,TEXT> STATIC,
 	parameter         FROZEN <parameter>,
 	blob_value        BLOB,
 	real_value        FLOAT,
 	text_value        TEXT,
 	type              TEXT,
-   	PRIMARY KEY ((id), parameter)
+   	PRIMARY KEY ((name, tag, id), parameter)
 ) WITH CLUSTERING ORDER BY (parameter ASC);
 
 -- Allow querying by parameter
 -- These are 'lightweight' timeseries
 CREATE INDEX parameter_idx ON varilog.md_data(parameter);
-
--- Maintain cycles count for each MD 
-CREATE TABLE varilog.md_cycles_count(
-	name              TEXT,
-	tag               TEXT,
-	cycles_count      COUNTER,
-	PRIMARY KEY ((name), tag)
-);
 
 -- Timeseries
 CREATE TABLE varilog.timeseries(
@@ -62,14 +58,12 @@ CREATE TABLE varilog.timeseries(
 
 -- Description for the device defined timeseries
 CREATE TABLE varilog.device_timeseries(
-	device            TEXT,
-	property          TEXT,
-	field             TEXT,
+	parameter         FROZEN <parameter>,
 	year              INT,
 	selector          TEXT,
 	description       TEXT,
 	id                UUID,
-	PRIMARY KEY ((device, property, field, year), selector)
+	PRIMARY KEY ((parameter, year), selector)
 );
 
 -- Description for the user defined timeseries
@@ -81,4 +75,10 @@ CREATE TABLE varilog.user_timeseries(
 	md_names          SET<TEXT>,
 	id                UUID,
 	PRIMARY KEY (name, tag)
+);
+
+-- Analytics on the varilog
+CREATE TABLE varilog.analytics(
+	
+	
 );
