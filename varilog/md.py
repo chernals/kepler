@@ -55,6 +55,9 @@ class ParameterData():
             self._value = _convert_object_from_cassandra(r[0], [r[1], r[2], r[3]])
         return self._value
         
+    def __call__(self):
+        return self.value
+        
     def __dir__(self):
         if self._type == 'numpy':
             return dir(np.ndarray)
@@ -164,7 +167,7 @@ class MDNames(list):
         self.__dict__ = {'_session': self._session}
         self.clear()
         for r in rows:
-            self.__dict__[r[0]] = r[0]
+            self.__dict__[r[0]] = MDTags(self._session, r[0])
             self.append(r[0])
         return list(self)
             
@@ -172,16 +175,28 @@ class MDNames(list):
         return self.__dict__.keys()
             
 class MDTags(list):
+    
     def __init__(self, session, name):
+        self._name = name
         rows = session.execute("""
         SELECT tag FROM md_info WHERE name = %s
-        """, (name,))
+        """, (self._name,))
         tags = set()
         for r in rows:
             tags.add(r[0])
         for t in tags:
-            self.__dict__[name+'__'+str(t).replace('.', '_')] = t
+            self.__dict__['tag'+str(t).replace('.', '_')] = t
             self.append(t)
+          
+    @property
+    def tags(self):
+        return [self.__dict__[k] for k in self.__dict__.keys() if not k.startswith('_')]
+        
+    def __repr__(self):
+        return self._name
+            
+    def __str__(self):
+        return self._name
             
     def __dir__(self):
         return self.__dict__.keys()
@@ -208,30 +223,57 @@ class MD():
     
     names = MDNames(_session)
     
+    def __new__(cls, *args, **kwargs):
+        """
+        Prevent the creation of MD objects when name or tag is not found.
+        """
+        
+        # Note the call to 'update()'
+        if str(args[0]) not in cls.names.update():
+            print('MD name not found.')
+            return None
+        if args[1] not in getattr(cls.names, str(args[0])).tags:
+            print('Tag not found for the MD.')
+            return None
+            
+        return object.__new__(cls)
+            
     def __init__(self, name, tag): 
         self.name = name
         self.tag = tag
-        self.tags = MDTags(MD._session, self.name)
         self._ids = self._get_ids()
         self._devices = self._get_devices()
         self._users = None
-        self.users
+        self._comment = None
         self.parameters = Parameters(self.name, self.tag, self._devices)
         self.cycles = {}
         self._init_cycles()
         print("MD found with %d cycles and %d devices." % (len(self._ids), len(self._devices.keys())))
         
     @property
+    def comment(self):
+        if self._comment is None:
+            rows = MD._session.execute("""
+            SELECT md_comment FROM md_info WHERE name = %s
+            """, (str(self.name),))
+            self._comment = rows[0][0]
+        return self._comment
+        
+    @property
     def users(self):
         if self._users is None:
             rows = MD._session.execute("""
             SELECT users FROM md_info WHERE name = %s
-            """, (self.name, ))
+            """, (str(self.name), ))
             self._users = rows[0][0]
         if self._users is None:
             return []
         else:
             return list(self._users)
+            
+    @property
+    def devices(self):
+        return self._devices
         
     def _init_cycles(self):
         for id in self._ids:
@@ -242,7 +284,7 @@ class MD():
         ids = []
         rows = MD._session.execute("""
         SELECT id FROM md_info WHERE name=%s AND tag=%s
-        """, (self.name, self.tag))
+        """, (str(self.name), self.tag))
         for r in rows:
             ids.append(r[0])
         return ids    
@@ -251,7 +293,7 @@ class MD():
         id = self._ids[0]
         rows = MD._session.execute("""
         SELECT parameter, type FROM md_data WHERE name=%s AND tag=%s AND id=%s
-        """, (self.name, self.tag, id ,))
+        """, (str(self.name), self.tag, id ,))
         devices = {}
         for r in rows:
             p = r[0]
