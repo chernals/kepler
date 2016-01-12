@@ -7,6 +7,6 @@ The project's key compoenents are:
   - **kep** A command-line tool written in Python to manage the data, users, tagging metadata and interact with Cassandra.Varilog;
   - **kepler** A package providing the Python API to the functionalities of the varilog. Queries can be run either directly with CQL (Cassandra Query Language) or *via* the complete Object Model of Cassandra.Varilog.
 
-The project has its own Github hosted website: http://chernals.github.io/varilog/ .
+The project has its own Github hosted website: http://chernals.github.io/kepler/ .
   
-The source code, documentation, support and examples are all hosted on Github (http://www.github.com/chernals/varilog).
+The source code, documentation, support and examples are all hosted on Github (http://www.github.com/chernals/kepler).
