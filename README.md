@@ -1,5 +1,4 @@
-# varilog
-CERN Varilog 2.0
+# kepler
 
 User-domain persistency layer for the CERN Control System.
 
