@@ -1,5 +1,6 @@
 import io
 import time
+import hashlib
 import threading
 import numpy as np
 import cassandra.cluster
@@ -26,22 +27,37 @@ class SmartDict():
 
 class Parameter(object):
     """
-    Cassandra User Defined Type (UDT) for varilog.md_data(parameter).
+    Cassandra User Defined Type (UDT) for kepler.md_data(parameter).
     """
     def __init__(self, device, property, field):
         self.device = device
         self.property = property
         self.field = field
         
+l = threading.Lock()
+        
 class ParameterData():
     
-    def __init__(self, name, tag, p, id, type):
+    class cachingThread(threading.Thread):
+        
+        def __init__(self, cycles, p):
+            threading.Thread.__init__(self)
+            self._cycles = cycles
+            self._p = p
+            
+        def run(self):
+            p = self._p
+            for c in self._cycles.values():
+                getattr(getattr(getattr(c, p.device), p.property), p.field).value_async()
+    
+    def __init__(self, name, tag, p, id, type, cycles):
         self._p = p
         self._name = name
         self._tag = tag
         self._id = id
         self._type = type
         self._value = None
+        self._cycles = cycles
         
     def __getattr__(self, a):
         return getattr(self.value,a)
@@ -49,11 +65,37 @@ class ParameterData():
     @property
     def value(self):
         if self._value is None:
+            with l:
+                if not self._cycles._get_caching(self._p):
+                    self._cycles._set_caching(self._p)
+                    #ParameterData.cachingThread(self._cycles, self._p).start()
             r = MD._session.execute(MD._bound_statements['parameter_data'].bind(
                 (self._name, self._tag, self._id, self._p)))
             r = r[0]
             self._value = _convert_object_from_cassandra(r[0], [r[1], r[2], r[3]])
         return self._value
+        
+    @property
+    def _value(self):
+        return self.__value
+        
+    @_value.setter
+    def _value(self, v):
+        with l:
+            self.__value = v
+
+    def value_async(self):
+        if self._value is None:
+            future = MD._session.execute_async(MD._bound_statements['parameter_data'].bind(
+                (self._name, self._tag, self._id, self._p)))
+            future.add_callback(self._get_async_success)
+        
+    def _get_async_success(self, r):
+        r = r[0]
+        self._value = _convert_object_from_cassandra(r[0],[r[1], r[2], r[3]])
+        
+    def _get_async_error(self, exception):
+        print("Error")
         
     def __call__(self):
         return self.value
@@ -122,14 +164,41 @@ class ParameterTimeseries():
     def __repr__(self):
         return str(self.values)
         
+class Cycles(dict):
+    
+    def __init__(self, name, tag, devices, ids):
+        self.__dict__ = {}
+        self._caching = {}
+        self._p = Parameters(name, tag, devices)
+        for k in devices.keys():
+            self.__dict__[k] = getattr(self._p, k)
+        for id in ids:
+            k = cassandra.util.datetime_from_uuid1(id).isoformat()
+            self[k] = Parameters(name, tag, devices, id, self)
+            
+    def __call__(self):
+        return self.__dict__
+        
+    def _set_caching(self, p):
+        h = hashlib.md5((p.device+p.property+p.field).encode('utf-8')).hexdigest()
+        self._caching[h] = True
+            
+    def _get_caching(self, p):
+        h = hashlib.md5((p.device+p.property+p.field).encode('utf-8')).hexdigest()
+        if self._caching.get(h) is None:
+            return False
+        else:
+            return self._caching[h]
+            
 class Parameters():
     
-    def __init__(self, name, tag, devices, id=None):
+    def __init__(self, name, tag, devices, id=None, cycles=None):
         self._name = name
         self._tag = tag
         self._devices = devices
         self._id = id
         self.__cache = None
+        self._cycles = cycles
         if id is None:
             self._cache
         
@@ -151,7 +220,7 @@ class Parameters():
                         if self._id is None:
                             self.__cache[d][p][f] = ParameterTimeseries(self._name, self._tag, Parameter(d,p,f))
                         else:
-                            self.__cache[d][p][f] = ParameterData(self._name, self._tag, Parameter(d,p,f), self._id, self._devices[d][p][f])
+                            self.__cache[d][p][f] = ParameterData(self._name, self._tag, Parameter(d,p,f), self._id, self._devices[d][p][f], self._cycles)
         return self.__cache 
         
 class MDNames(list):
@@ -169,6 +238,7 @@ class MDNames(list):
         for r in rows:
             self.__dict__[r[0]] = MDTags(self._session, r[0])
             self.append(r[0])
+        print(list(self))
         return list(self)
             
     def __dir__(self):
@@ -202,9 +272,10 @@ class MDTags(list):
         return self.__dict__.keys()
 
 class MD():
-    _cluster = cassandra.cluster.Cluster()
-    _session = _cluster.connect('varilog')
-    _cluster.register_user_type('varilog', 'parameter', Parameter)
+    # , reconnection_policy=cassandra.policies.ConstantReconnectionPolicy(100, max_attempts=1)
+    _cluster = cassandra.cluster.Cluster(['188.184.77.145'])
+    _session = _cluster.connect('kepler')
+    _cluster.register_user_type('kepler', 'parameter', Parameter)
     
     _bound_statements = {}
     _bound_statements['parameter_data'] = _session.prepare(
@@ -245,9 +316,7 @@ class MD():
         self._devices = self._get_devices()
         self._users = None
         self._comment = None
-        self.parameters = Parameters(self.name, self.tag, self._devices)
-        self.cycles = {}
-        self._init_cycles()
+        self.cycles = Cycles(self.name, self.tag, self.devices, self._ids)
         print("MD found with %d cycles and %d devices." % (len(self._ids), len(self._devices.keys())))
         
     @property
@@ -275,11 +344,6 @@ class MD():
     def devices(self):
         return self._devices
         
-    def _init_cycles(self):
-        for id in self._ids:
-            k = cassandra.util.datetime_from_uuid1(id).isoformat()
-            self.cycles[k] = Parameters(self.name, self.tag, self._devices, id)
-        
     def _get_ids(self):
         ids = []
         rows = MD._session.execute("""
@@ -293,7 +357,7 @@ class MD():
         id = self._ids[0]
         rows = MD._session.execute("""
         SELECT parameter, type FROM md_data WHERE name=%s AND tag=%s AND id=%s
-        """, (str(self.name), self.tag, id ,))
+        """, (str(self.name), self.tag, id))
         devices = {}
         for r in rows:
             p = r[0]
