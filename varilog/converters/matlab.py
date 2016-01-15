@@ -2,7 +2,7 @@ from numbers import Number
 import re 
 import os
 import io
-from datetime import datetime
+from datetime import datetime, timedelta
 import numpy as np
 import scipy.io
 from cassandra.cluster import Cluster
@@ -18,9 +18,9 @@ class Parameter(object):
 class Converter(object):
     
     def __init__(self, *args, **kwargs):
-        self.cluster = Cluster()
-        self.cluster.register_user_type('varilog', 'parameter', Parameter)
-        self.session = self.cluster.connect('varilog')
+        self.cluster = Cluster(['188.184.77.145'])
+        self.cluster.register_user_type('kepler', 'parameter', Parameter)
+        self.session = self.cluster.connect('kepler')
         self._prepare_insert_statements()
         self.path = kwargs['path']
         self.md_name = kwargs['name']
@@ -73,7 +73,7 @@ class Converter(object):
             # Magic values for 'squeeze_me' and 'struct_as_record'
             data = scipy.io.loadmat(self.path+f, squeeze_me=True, struct_as_record=False)
             d = data['myDataStruct']
-            cyclestamp = datetime.fromtimestamp(d.headerCycleStamps[0]/1000000000)
+            cyclestamp = datetime.fromtimestamp(d.headerCycleStamps[0]/1000000000)+timedelta(days=1)
             self.counter_timestamps += 1
             if self._check_not_present(cyclestamp):
                 self._process_archive(d, cyclestamp)
@@ -107,7 +107,7 @@ class Converter(object):
               self.timeuuid,
               comment,
               cyclestamp))
-        self._insert_telegram(d)      
+        #self._insert_telegram(d)      
         for p in d.parameters:
             # Special case for LSA settings
             # Parameter: rmi://lsa/name
