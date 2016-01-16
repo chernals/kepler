@@ -1,14 +1,14 @@
 from setuptools import setup
 
 setup(
-    name='varilog',
-    version='0.1',
-    py_modules=['vrl'],
+    name='kepler',
+    version='0.2',
+    py_modules=['kep'],
     install_requires=[
         'Click',
     ],
     entry_points='''
         [console_scripts]
-        vrl=vrl:cli
+        kep=kep:cli
     ''',
 )
