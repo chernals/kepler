@@ -1,17 +1,17 @@
-CREATE KEYSPACE varilog 
+CREATE KEYSPACE kepler 
 	WITH replication = {'class': 'SimpleStrategy', 'replication_factor': '1'}
 	AND durable_writes = true;
 	
 -- Composed type for parameters
 -- device/property#field
-CREATE TYPE varilog.parameter (
+CREATE TYPE kepler.parameter (
 	device            TEXT,
 	property          TEXT,
 	field             TEXT
 );
 	
 -- Metadata for MD's and tags
-CREATE TABLE varilog.md_info(
+CREATE TABLE kepler.md_info(
 	name              TEXT,
 	tag               TEXT,
 	id                TIMEUUID,
@@ -20,14 +20,12 @@ CREATE TABLE varilog.md_info(
 	md_comment        TEXT STATIC,
 	users             SET<TEXT> STATIC,
 	created           TIMESTAMP STATIC,
+	tag_info          MAP<TEXT, TIMESTAMP> STATIC,
 	PRIMARY KEY ((name), tag, id)
 ) WITH CLUSTERING ORDER BY (tag ASC, id ASC);
 
--- Allow querying by cyclestamps
-CREATE INDEX cyclestamp_idx ON varilog.md_info(cyclestamp);
-
 -- Payload data for MD's
-CREATE TABLE varilog.md_data(
+CREATE TABLE kepler.md_data(
 	name              TEXT,
 	tag               TEXT,
     id                TIMEUUID,
@@ -42,10 +40,10 @@ CREATE TABLE varilog.md_data(
 
 -- Allow querying by parameter
 -- These are 'lightweight' timeseries
-CREATE INDEX parameter_idx ON varilog.md_data(parameter);
+CREATE INDEX parameter_idx ON kepler.md_data(parameter);
 
 -- Timeseries
-CREATE TABLE varilog.timeseries(
+CREATE TABLE kepler.timeseries(
 	id                UUID,
 	type              TEXT STATIC,
 	timestamp         TIMESTAMP,
@@ -57,7 +55,7 @@ CREATE TABLE varilog.timeseries(
 ) WITH CLUSTERING ORDER BY (timestamp DESC);
 
 -- Description for the device defined timeseries
-CREATE TABLE varilog.device_timeseries(
+CREATE TABLE kepler.device_timeseries(
 	parameter         FROZEN <parameter>,
 	year              INT,
 	selector          TEXT,
@@ -67,7 +65,7 @@ CREATE TABLE varilog.device_timeseries(
 );
 
 -- Description for the user defined timeseries
-CREATE TABLE varilog.user_timeseries(
+CREATE TABLE kepler.user_timeseries(
 	name              TEXT,
 	tag               TEXT,
 	description       TEXT,
@@ -77,8 +75,8 @@ CREATE TABLE varilog.user_timeseries(
 	PRIMARY KEY (name, tag)
 );
 
--- Analytics on the varilog
-CREATE TABLE varilog.analytics(
+-- Analytics on the kepler
+--CREATE TABLE kepler.analytics(
 	
 	
-);
+	--);
