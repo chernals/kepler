@@ -1,3 +1,8 @@
+from kepler.smartdict import SmartDict
+from kepler.parameter import Parameter
+from kepler.parameterdata import ParameterData
+from kepler.parametertimeseries import ParameterTimeseries
+
 class Parameters():
     
     def __init__(self, name, tag, devices, id=None, cycles=None):

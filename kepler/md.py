@@ -1,24 +1,15 @@
-import io
-import time
-import hashlib
 import threading
 import numpy as np
-import cassandra.cluster
-import cassandra.util
 
-import smartdict
-import parameter
-import parameterdata
-import parametertimeseries
-
-_thread_lock = threading.Lock()
+from kepler.parameter import Parameter
+from kepler.mdnames import MDNames
+from kepler.mdtags import MDTags
+from kepler.mdusers import MDUsers
+from kepler.mdcomment import MDComment
+from kepler.cycles import Cycles
+from kepler.connection import _session
 
 class MD():
-    #_cluster = cassandra.cluster.Cluster(['188.184.77.145'], load_balancing_policy=cassandra.policies.WhiteListRoundRobinPolicy(['188.184.77.145']))
-    _cluster = cassandra.cluster.Cluster()
-    _session = _cluster.connect('varilog')
-    _cluster.register_user_type('varilog', 'parameter', Parameter)
-    
     names = MDNames(_session)
     
     def __new__(cls, *args, **kwargs):
@@ -31,16 +22,17 @@ class MD():
             return None
         
         # Add another check if tag is defined then it should exist
-            
+
         return object.__new__(cls)
             
     def __init__(self, name, tag=None): 
         self.name = name
-        self._tag = None
-        self.users = MDUsers(MD._session, self.name)
-        self.comment = MDComment(MD._session, self.name)
-        if tag is not None:
-            self._tag_init(self)
+        self._tag = tag
+        self.users = MDUsers(_session, self.name)
+        self.comment = MDComment(_session, self.name)
+        print(self._tag)
+        if self._tag is not None:
+            self._tag_init()
        
     @property 
     def tag(self):
@@ -75,7 +67,7 @@ class MD():
         
     def _get_ids(self):
         ids = []
-        rows = MD._session.execute("""
+        rows = _session.execute("""
         SELECT id FROM md_info WHERE name=%s AND tag=%s
         """, (str(self.name), self.tag))
         for r in rows:
@@ -84,7 +76,7 @@ class MD():
     
     def _get_devices(self):
         id = self._ids[0]
-        rows = MD._session.execute("""
+        rows = _session.execute("""
         SELECT parameter, type FROM md_data WHERE name=%s AND tag=%s AND id=%s
         """, (str(self.name), self.tag, id))
         devices = {}

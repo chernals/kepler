@@ -18,13 +18,14 @@ class Parameter(object):
 class Converter(object):
     
     def __init__(self, *args, **kwargs):
-        self.cluster = Cluster(['188.184.77.145'])
-        self.cluster.register_user_type('kepler', 'parameter', Parameter)
-        self.session = self.cluster.connect('kepler')
-        self._prepare_insert_statements()
         self.path = kwargs['path']
         self.md_name = kwargs['name']
         self.md_tag = str(kwargs['tag'])
+        self.host = str(kwargs['host'])
+        self.cluster = Cluster([self.host])
+        self.cluster.register_user_type('kepler', 'parameter', Parameter)
+        self.session = self.cluster.connect('kepler')
+        self._prepare_insert_statements()
         self.counter_timestamps = 0
         self._load_archive()
         print('Timestamps inserted: %d' % self.counter_timestamps)
@@ -79,6 +80,7 @@ class Converter(object):
                 self._process_archive(d, cyclestamp)
     
     def _check_not_present(self, cyclestamp):
+        return True
         count = self.session.execute("""
         SELECT COUNT(*) FROM md_info WHERE 
             name = %s and tag = %s and cyclestamp = %s
@@ -107,7 +109,7 @@ class Converter(object):
               self.timeuuid,
               comment,
               cyclestamp))
-        #self._insert_telegram(d)      
+        self._insert_telegram(d)      
         for p in d.parameters:
             # Special case for LSA settings
             # Parameter: rmi://lsa/name

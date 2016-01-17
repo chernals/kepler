@@ -3,29 +3,34 @@ import getpass
 from datetime import datetime
 import click
 from cassandra.cluster import Cluster
-import varilog.converters.matlab
+import kepler.converters.matlab
 
 @click.group()
 @click.option('--debug/--no-debug', default=False, help='Set the Verbosity of the output')
 @click.option('--username', required=True,
               default=lambda: getpass.getuser(), 
               help='Will default to the current username')
+@click.option('--host', required=True,
+              default='cs-ccr-beabp1.cern.ch',
+              help='Will default to cs-ccr-beabp1.cern.ch')
 @click.pass_context
-def cli(ctx, debug, username):
+def cli(ctx, debug, username, host):
     if debug:
         click.echo('Debug mode is on')
     ctx.obj = {}
     ctx.obj['username'] = username
+    ctx.obj['host'] = host
     pass
     
 @cli.command()
 def info():
-    """Display varilog info.
+    """Display Kepler info.
     
     This will connect to Cassandra and provide summary information.
     """
-    cluster = Cluster(['188.184.77.145'])
-    session = cluster.connect('varilog')
+    #cluster = Cluster(['188.184.77.145'])
+    cluster = Cluster()
+    session = cluster.connect('kepler')
     rows = session.execute("""
     SELECT COUNT(*) FROM md_info
     """)
@@ -57,7 +62,7 @@ def create(ctx, name, comment):
     add time and user information.
     """
     cluster = Cluster()
-    session = cluster.connect('varilog')
+    session = cluster.connect('kepler')
     rows = session.execute("""
     SELECT name FROM md_info WHERE name = %s
     """, (name,))
@@ -78,12 +83,13 @@ def create(ctx, name, comment):
 @click.argument('tag')
 @click.argument('path')
 @click.option('--format', default='matlab')
-def push(name, tag, path, format):
+@click.pass_context
+def push(ctx, name, tag, path, format):
     if format is not 'matlab':
         click.echo("Only Matlab pulls are supported.")
         exit()
     if format is 'matlab':
-        conv = varilog.converters.matlab.Converter(name=name, tag=tag, path=path)
+        conv = kepler.converters.matlab.Converter(name=name, tag=tag, path=path, host=ctx.obj['host'])
     
 @md.command()
 @click.option('--user')
@@ -92,7 +98,7 @@ def list(user):
     
     """
     cluster = Cluster()
-    session = cluster.connect('varilog')
+    session = cluster.connect('kepler')
     rows = session.execute("""
     SELECT name, tag, users FROM md_info
     """)

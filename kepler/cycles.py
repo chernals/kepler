@@ -1,3 +1,8 @@
+import hashlib
+import cassandra.cluster
+import cassandra.util
+from kepler.parameters import Parameters
+
 class Cycles(dict):
     
     def __init__(self, name, tag, devices, ids):

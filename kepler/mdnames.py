@@ -1,3 +1,5 @@
+from kepler.mdtags import MDTags
+
 class MDNames(list):
     
     def __init__(self, session):

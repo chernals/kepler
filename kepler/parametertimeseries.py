@@ -1,3 +1,10 @@
+import time
+import numpy as np
+import cassandra.util
+from kepler import cqlstatements
+from kepler.connection import _session
+from kepler.utils import _convert_object_from_cassandra
+
 class ParameterTimeseries():
     def __init__(self, name, tag, p):
         self._p = p
@@ -10,7 +17,7 @@ class ParameterTimeseries():
         if self._values is None:
             start_time = time.time()
             self._values = []
-            rows = MD._session.execute(MD._bound_statements['parameter_timeseries'].bind(
+            rows = _session.execute(cqlstatements._bound_statements['parameter_timeseries'].bind(
                 (self._name, self._tag, self._p,)))
             for r in rows:
                 cyclestamp = cassandra.util.datetime_from_uuid1(r[4])

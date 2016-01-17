@@ -1,3 +1,9 @@
+import threading
+import kepler
+from kepler.connection import _session
+from kepler import cqlstatements
+from kepler.utils import _convert_object_from_cassandra
+
 class ParameterData():
     
     class cachingThread(threading.Thread):
@@ -27,11 +33,12 @@ class ParameterData():
     @property
     def value(self):
         if self._value is None:
-            with varilog.md._thread_lock:
-                if not self._cycles._get_caching(self._p):
-                    self._cycles._set_caching(self._p)
-                    ParameterData.cachingThread(self._cycles, self._p).start()
-            r = MD._session.execute(MD._bound_statements['parameter_data'].bind(
+            if kepler._cache_flag:
+                with kepler._thread_lock:
+                    if not self._cycles._get_caching(self._p):
+                        self._cycles._set_caching(self._p)
+                        ParameterData.cachingThread(self._cycles, self._p).start()
+            r = _session.execute(cqlstatements._bound_statements['parameter_data'].bind(
                 (self._name, self._tag, self._id, self._p)))
             r = r[0]
             self._value = _convert_object_from_cassandra(r[0], [r[1], r[2], r[3]])
@@ -43,16 +50,18 @@ class ParameterData():
         
     @_value.setter
     def _value(self, v):
-        with varilog.md._thread_lock:
+        with kepler._thread_lock:
             self.__value = v
 
     def value_async(self):
         if self._value is None:
-            future = MD._session.execute_async(MD._bound_statements['parameter_data'].bind(
+            future = _session.execute_async(cqlstatements._bound_statements['parameter_data'].bind(
                 (self._name, self._tag, self._id, self._p)))
             future.add_callback(self._get_async_success)
         
     def _get_async_success(self, r):
+        if r is None:
+            print("Error retrieving a value for the cache")
         r = r[0]
         self._value = _convert_object_from_cassandra(r[0],[r[1], r[2], r[3]])
         

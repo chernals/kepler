@@ -9,7 +9,7 @@ class MDTags(list):
         for r in rows:
             tags.add(r[0])
         for t in tags:
-            self.__dict__['tag'+str(t).replace('.', '_')] = t
+            self.__dict__['tag'+str(t).replace('.', '_').replace(' ', '_')] = t
             self.append(t)
           
     @property
