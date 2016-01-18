@@ -5,7 +5,7 @@ setup(
     version='0.2',
     py_modules=['kep'],
     install_requires=[
-        'Click',
+        'Click', 'icalendar', 'cassandra-driver'
     ],
     entry_points='''
         [console_scripts]
