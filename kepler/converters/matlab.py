@@ -7,6 +7,7 @@ import numpy as np
 import scipy.io
 from cassandra.cluster import Cluster
 import cassandra.util
+import kepler.connection
 
 class Parameter(object):
     
@@ -21,10 +22,7 @@ class Converter(object):
         self.path = kwargs['path']
         self.md_name = kwargs['name']
         self.md_tag = str(kwargs['tag'])
-        self.host = str(kwargs['host'])
-        self.cluster = Cluster([self.host])
-        self.cluster.register_user_type('kepler', 'parameter', Parameter)
-        self.session = self.cluster.connect('kepler')
+        self.session = kepler.connection._session
         self._prepare_insert_statements()
         self.counter_timestamps = 0
         self._load_archive()
@@ -74,13 +72,12 @@ class Converter(object):
             # Magic values for 'squeeze_me' and 'struct_as_record'
             data = scipy.io.loadmat(self.path+f, squeeze_me=True, struct_as_record=False)
             d = data['myDataStruct']
-            cyclestamp = datetime.fromtimestamp(d.headerCycleStamps[0]/1000000000)+timedelta(days=1)
+            cyclestamp = datetime.fromtimestamp(d.headerCycleStamps[0]/1000000000)+timedelta(days=0)
             self.counter_timestamps += 1
             if self._check_not_present(cyclestamp):
                 self._process_archive(d, cyclestamp)
     
     def _check_not_present(self, cyclestamp):
-        return True
         count = self.session.execute("""
         SELECT COUNT(*) FROM md_info WHERE 
             name = %s and tag = %s and cyclestamp = %s
@@ -100,16 +97,7 @@ class Converter(object):
     
     def _process_archive(self, d, cyclestamp):
         comment = d.comment
-        self.timeuuid = cassandra.util.uuid_from_time(cyclestamp)
-        self.session.execute("""
-        INSERT INTO md_info(name, tag, id, comment, cyclestamp)
-        VALUES(%s, %s, %s, %s, %s)
-        """, (self.md_name,
-              self.md_tag,
-              self.timeuuid,
-              comment,
-              cyclestamp))
-        self._insert_telegram(d)      
+        self.timeuuid = cassandra.util.uuid_from_time(cyclestamp) 
         for p in d.parameters:
             # Special case for LSA settings
             # Parameter: rmi://lsa/name
@@ -129,6 +117,20 @@ class Converter(object):
             if r:
                 self._convert_whole_property(r, d)
                 continue
+            
+        # Update the md_info table
+        self.session.execute("""
+        INSERT INTO md_info(name, tag, id, comment, cyclestamp)
+        VALUES(%s, %s, %s, %s, %s)
+        """, (self.md_name,
+              self.md_tag,
+              self.timeuuid,
+              comment,
+              cyclestamp))
+        self.session.execute("""
+        UPDATE md_info SET tag_info[%s] = %s WHERE name = %s
+        """, (self.md_tag, cyclestamp, self.md_name))
+        self._insert_telegram(d)
      
     def _convert_single_field(self, r, d):
         device = r.group(1)

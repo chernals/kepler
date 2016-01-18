@@ -30,11 +30,10 @@ class MD():
         self._tag = tag
         self.users = MDUsers(_session, self.name)
         self.comment = MDComment(_session, self.name)
-        print(self._tag)
         if self._tag is not None:
             self._tag_init()
        
-    @property 
+    @property
     def tag(self):
         return self._tag
        
