@@ -8,30 +8,34 @@ import kepler.converters.matlab
 @click.group()
 @click.option('--debug/--no-debug', default=False, help='Set the Verbosity of the output')
 @click.option('--username', required=True,
-              default=lambda: getpass.getuser(), 
+              default=getpass.getuser(), 
               help='Will default to the current username')
 @click.option('--host', required=True,
               default='cs-ccr-beabp1.cern.ch',
               help='Will default to cs-ccr-beabp1.cern.ch')
 @click.pass_context
 def cli(ctx, debug, username, host):
+    """Kepler CLI entry point.
+    
+    Set generic options.
+    """
     if debug:
         click.echo('Debug mode is on')
     ctx.obj = {}
     ctx.obj['username'] = username
     ctx.obj['host'] = host
+    cluster = Cluster([host])
+    ctx.obj['session'] = cluster.connect('kepler')
     pass
     
 @cli.command()
-def info():
-    """Display Kepler info.
+@click.pass_context
+def info(ctx):
+    """Display Kepler information.
     
     This will connect to Cassandra and provide summary information.
     """
-    #cluster = Cluster(['188.184.77.145'])
-    cluster = Cluster()
-    session = cluster.connect('kepler')
-    rows = session.execute("""
+    rows = ctx.obj['session'].execute("""
     SELECT COUNT(*) FROM md_info
     """)
     for r in rows:
@@ -52,7 +56,6 @@ def md():
 @md.command()
 @click.argument('name', required=True)
 @click.option('--comment', prompt=True, required=True)
-#@click.confirmation_option(help='Are you sure you want to create a new MD?')
 @click.pass_context
 def create(ctx, name, comment):
     """Create new MD.
@@ -61,9 +64,7 @@ def create(ctx, name, comment):
     If not, create a new one with a comment and
     add time and user information.
     """
-    cluster = Cluster()
-    session = cluster.connect('kepler')
-    rows = session.execute("""
+    rows = ctx.obj['session'].execute("""
     SELECT name FROM md_info WHERE name = %s
     """, (name,))
     exists = False
@@ -71,13 +72,42 @@ def create(ctx, name, comment):
         exists = True
     if not exists:
         stamp = datetime.now()
-        session.execute("""
+        ctx.obj['session'].execute("""
         INSERT INTO md_info(name, md_comment, created, users) VALUES(%s, %s, %s, {%s})
         """, (name, comment, stamp, ctx.obj['username']))
         click.echo("MD created at %s" % stamp)
     else:
         click.echo("This MD already exists!")
-        
+
+@md.command()
+@click.argument('name', required=True)
+@click.option('--comment', prompt=True, required=True)
+@click.option('--user', prompt=True)
+@click.pass_context
+def update(ctx, name, comment, user):
+    """Update information of an existing MD.
+    
+    Check if MD name already exists.
+    If it does, update its associated information.
+    """
+    ctx.obj['session'].execute("""
+    INSERT INTO md_info(name, md_comment, users) VALUES (%s, %s, {%s})
+    """, (name, comment, user))
+    
+@md.command()
+@click.argument('name', required=True)
+@click.argument('user', required=True)
+@click.pass_context
+def adduser(ctx, name, user):
+    """Add user to an existing MD.
+    
+    Check if MD name already exists.
+    If it does, add a user to the user list.
+    """
+    ctx.obj['session'].execute("""
+    UPDATE md_info SET users = users + {%s} WHERE name = %s
+    """, (user, name))
+    
 @md.command()
 @click.argument('name')
 @click.argument('tag')
@@ -85,11 +115,21 @@ def create(ctx, name, comment):
 @click.option('--format', default='matlab')
 @click.pass_context
 def push(ctx, name, tag, path, format):
+    rows = ctx.obj['session'].execute("""
+    SELECT name FROM md_info WHERE name = %s
+    """, (name,))
+    exists = False
+    if len(rows.current_rows) is not 0:
+        exists = True
+    if exists is False:
+        print("Error: the MD name does not exist!")
+        exit()
+    
     if format is not 'matlab':
         click.echo("Only Matlab pulls are supported.")
         exit()
     if format is 'matlab':
-        conv = kepler.converters.matlab.Converter(name=name, tag=tag, path=path, host=ctx.obj['host'])
+        conv = kepler.converters.matlab.Converter(name=name, tag=tag, path=path, session=ctx.obj['session'])
     
 @md.command()
 @click.option('--user')
@@ -119,3 +159,13 @@ def ts():
     
     """
     pass
+    
+@cli.command()
+@click.option('--file', default='kepler.ics')
+@click.pass_context
+def ical(ctx, file):
+    """Generates iCal file.
+    
+    """
+    cal = kepler.utils.KepCal(ctx.obj['host']).save(file)
+    
