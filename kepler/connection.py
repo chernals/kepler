@@ -1,5 +1,6 @@
 import os
 import cassandra.cluster
+import cassandra.policies
 from cassandra.auth import PlainTextAuthProvider
 from kepler.parameter import Parameter
 import logging
@@ -11,12 +12,12 @@ def _try_connect_to_cluster(hosts, policy=None):
     if hosts[0] is 'localhost':
         p = None
     else:
-        p = [os.environ.get('KEPLER_PASSWORD') or getpass.getpass()]
+        p = os.environ.get('KEPLER_PASSWORD') or getpass.getpass("Kepler password on host %s: " % hosts[0])
     auth_provider = PlainTextAuthProvider(username='md_user', password=p)
     if policy is not None:
         cluster = cassandra.cluster.Cluster(hosts, auth_provider=auth_provider, load_balancing_policy=policy)
     else:
-        cluster = cassandra.cluster.Cluster(hosts, auth_provider=auth_provider, )
+        cluster = cassandra.cluster.Cluster(hosts, auth_provider=auth_provider)
     session = cluster.connect('kepler')
     cluster.register_user_type('kepler', 'parameter', Parameter)
     return session
@@ -30,7 +31,7 @@ def _connect(hosts):
 
 def _get_hosts_and_connect(hosts = None):
     if hosts is None:
-        h = [os.environ.get('KEPLER') or 'cwe-513-vol078']
+        h = [os.environ.get('KEPLER_HOST') or 'cwe-513-vol078']
     else:
         h = hosts
     logging.getLogger('cassandra.cluster').setLevel(logging.CRITICAL)
