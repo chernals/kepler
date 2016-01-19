@@ -25,6 +25,9 @@ class ParameterTimeseries():
             self._values = np.array(sorted(list(self._values), key=lambda x: x[0])) 
             print("Data queried in %f seconds." % (time.time()-start_time,))
         return self._values
+        
+    def __call__(self):
+        return self.values
     
     def __len__(self):
         return len(self.values)
