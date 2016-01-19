@@ -3,6 +3,7 @@ import getpass
 from datetime import datetime
 import click
 from cassandra.cluster import Cluster
+import kepler.connection
 import kepler.converters.matlab
 
 @click.group()
@@ -10,11 +11,8 @@ import kepler.converters.matlab
 @click.option('--username', required=True,
               default=getpass.getuser(), 
               help='Will default to the current username')
-@click.option('--host', required=True,
-              default='cs-ccr-beabp1.cern.ch',
-              help='Will default to cs-ccr-beabp1.cern.ch')
 @click.pass_context
-def cli(ctx, debug, username, host):
+def cli(ctx, debug, username):
     """Kepler CLI entry point.
     
     Set generic options.
@@ -23,9 +21,6 @@ def cli(ctx, debug, username, host):
         click.echo('Debug mode is on')
     ctx.obj = {}
     ctx.obj['username'] = username
-    ctx.obj['host'] = host
-    cluster = Cluster([host])
-    ctx.obj['session'] = cluster.connect('kepler')
     pass
     
 @cli.command()
@@ -35,7 +30,7 @@ def info(ctx):
     
     This will connect to Cassandra and provide summary information.
     """
-    rows = ctx.obj['session'].execute("""
+    rows = kepler.connection._session.execute("""
     SELECT COUNT(*) FROM md_info
     """)
     for r in rows:
@@ -64,7 +59,7 @@ def create(ctx, name, comment):
     If not, create a new one with a comment and
     add time and user information.
     """
-    rows = ctx.obj['session'].execute("""
+    rows = kepler.connection._session.execute("""
     SELECT name FROM md_info WHERE name = %s
     """, (name,))
     exists = False
@@ -72,7 +67,7 @@ def create(ctx, name, comment):
         exists = True
     if not exists:
         stamp = datetime.now()
-        ctx.obj['session'].execute("""
+        kepler.connection._session.execute("""
         INSERT INTO md_info(name, md_comment, created, users) VALUES(%s, %s, %s, {%s})
         """, (name, comment, stamp, ctx.obj['username']))
         click.echo("MD created at %s" % stamp)
@@ -90,7 +85,7 @@ def update(ctx, name, comment, user):
     Check if MD name already exists.
     If it does, update its associated information.
     """
-    ctx.obj['session'].execute("""
+    kepler.connection._session.execute("""
     INSERT INTO md_info(name, md_comment, users) VALUES (%s, %s, {%s})
     """, (name, comment, user))
     
@@ -104,7 +99,7 @@ def adduser(ctx, name, user):
     Check if MD name already exists.
     If it does, add a user to the user list.
     """
-    ctx.obj['session'].execute("""
+    kepler.connection._session.execute("""
     UPDATE md_info SET users = users + {%s} WHERE name = %s
     """, (user, name))
     
@@ -115,7 +110,7 @@ def adduser(ctx, name, user):
 @click.option('--format', default='matlab')
 @click.pass_context
 def push(ctx, name, tag, path, format):
-    rows = ctx.obj['session'].execute("""
+    rows = kepler.connection._session.execute("""
     SELECT name FROM md_info WHERE name = %s
     """, (name,))
     exists = False
@@ -129,7 +124,7 @@ def push(ctx, name, tag, path, format):
         click.echo("Only Matlab pulls are supported.")
         exit()
     if format is 'matlab':
-        conv = kepler.converters.matlab.Converter(name=name, tag=tag, path=path, session=ctx.obj['session'])
+        conv = kepler.converters.matlab.Converter(name=name, tag=tag, path=path)
     
 @md.command()
 @click.option('--user')
@@ -137,8 +132,7 @@ def list(user):
     """Get a complete list of all MD's.
     
     """
-    cluster = Cluster()
-    session = cluster.connect('kepler')
+    session = kepler.connection._session
     rows = session.execute("""
     SELECT name, tag, users FROM md_info
     """)
@@ -167,5 +161,5 @@ def ical(ctx, file):
     """Generates iCal file.
     
     """
-    cal = kepler.utils.KepCal(ctx.obj['host']).save(file)
+    cal = kepler.utils.KepCal().save(file)
     
