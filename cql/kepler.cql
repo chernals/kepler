@@ -1,42 +1,63 @@
+--ALTER KEYSPACE system_auth WITH REPLICATION =
+--  {'class' : 'NetworkTopologyStrategy', 'CCR': '3'};
+
 CREATE KEYSPACE kepler 
 	WITH replication = {'class': 'SimpleStrategy', 'replication_factor': '1'}
 	AND durable_writes = true;
+
+-- Composed type for Dataset(name, tag)
+CREATE TYPE kepler.dataset (
+	name              TEXT,
+	tag               TEXT
+);
 	
--- Composed type for parameters
--- device/property#field
+-- Composed type for parameters (device/property#field)
 CREATE TYPE kepler.parameter (
+	cycle             TEXT,
 	device            TEXT,
 	property          TEXT,
 	field             TEXT
 );
+
+-- Composed type for 'cycles' composing 'beams'
+CREATE TYPE kepler.cycle (
+	machine           TEXT,
+	injection         INT
+);
 	
--- Metadata for MD's and tags
+-- Metadata for datasets
 CREATE TABLE kepler.md_info(
 	name              TEXT,
 	tag               TEXT,
-	id                TIMEUUID,
+	beamstamp         TIMESTAMP,
+	cycles            SET<FROZEN<cycle>>, -- Cyclestamps of the cycles composing the beam
 	comment           TEXT,
-	cyclestamp        TIMESTAMP,
 	md_comment        TEXT STATIC,
 	users             SET<TEXT> STATIC,
 	created           TIMESTAMP STATIC,
-	tag_info          MAP<TEXT, TIMESTAMP> STATIC,
-	PRIMARY KEY ((name), tag, id)
-) WITH CLUSTERING ORDER BY (tag ASC, id ASC);
+	PRIMARY KEY ((name), tag, beamstamp)
+) WITH CLUSTERING ORDER BY (tag ASC, beamstamp DESC);
+
+--CREATE INDEX beamstamp_idx on kepler.md_info(id);
+--CREATE INDEX cyclestamp_idx on kepler.md_info(cyclestamp);
 
 -- Payload data for MD's
 CREATE TABLE kepler.md_data(
-	name              TEXT,
-	tag               TEXT,
-    id                TIMEUUID,
-	telegram          MAP<TEXT,TEXT> STATIC,
-	parameter         FROZEN <parameter>,
+	dataset           FROZEN<dataset>,
+    beamstamp         TIMESTAMP,
+	telegram          MAP<FROZEN<cycle>,FROZEN<MAP<TEXT,TEXT>>> STATIC,
+	cycle             FROZEN<cycle>,
+	parameter         FROZEN<parameter>,
 	blob_value        BLOB,
 	real_value        FLOAT,
 	text_value        TEXT,
 	type              TEXT,
-   	PRIMARY KEY ((name, tag, id), parameter)
-) WITH CLUSTERING ORDER BY (parameter ASC);
+   	PRIMARY KEY ((dataset, beamstamp), cycle, parameter)
+) WITH CLUSTERING ORDER BY (cycle ASC, parameter ASC);
+
+-- Allow querying by dataset
+-- Usefull for consistency check
+CREATE INDEX dataset_idx ON kepler.md_data(dataset);
 
 -- Allow querying by parameter
 -- These are 'lightweight' timeseries
