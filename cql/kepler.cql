@@ -13,7 +13,6 @@ CREATE TYPE kepler.dataset (
 	
 -- Composed type for parameters (device/property#field)
 CREATE TYPE kepler.parameter (
-	cycle             TEXT,
 	device            TEXT,
 	property          TEXT,
 	field             TEXT
@@ -22,7 +21,8 @@ CREATE TYPE kepler.parameter (
 -- Composed type for 'cycles' composing 'beams'
 CREATE TYPE kepler.cycle (
 	machine           TEXT,
-	injection         INT
+	injection         INT,
+	cyclestamp        TIMESTAMP
 );
 	
 -- Metadata for datasets
@@ -39,7 +39,6 @@ CREATE TABLE kepler.md_info(
 ) WITH CLUSTERING ORDER BY (tag ASC, beamstamp DESC);
 
 --CREATE INDEX beamstamp_idx on kepler.md_info(id);
---CREATE INDEX cyclestamp_idx on kepler.md_info(cyclestamp);
 
 -- Payload data for MD's
 CREATE TABLE kepler.md_data(
