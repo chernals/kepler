@@ -2,7 +2,7 @@ import os
 import cassandra.cluster
 import cassandra.policies
 from cassandra.auth import PlainTextAuthProvider
-from kepler.parameter import Parameter
+from kepler.udt import Parameter, Cycle, Dataset
 import logging
 import getpass
 
@@ -20,6 +20,9 @@ def _try_connect_to_cluster(hosts, policy=None):
         cluster = cassandra.cluster.Cluster(hosts, auth_provider=auth_provider)
     session = cluster.connect('kepler')
     cluster.register_user_type('kepler', 'parameter', Parameter)
+    cluster.register_user_type('kepler', 'cycle', Cycle)
+    cluster.register_user_type('kepler', 'dataset', Dataset)
+    
     return session
     
 def _connect(hosts):

@@ -3,20 +3,19 @@ import cassandra.cluster
 import cassandra.util
 from kepler.parameters import Parameters
 
-class Cycles(dict):
-    
-    def __init__(self, name, tag, devices, ids):
+class Cycles():
+    # Cycles(name, tag, devices, c, beams[c])
+    def __init__(self, name, tag, devices, beamstamp, cycles):
         self.__dict__ = {}
         self._caching = {}
-        self._p = Parameters(name, tag, devices)
-        for k in devices.keys():
-            self.__dict__[k] = getattr(self._p, k)
-        for id in ids:
-            k = cassandra.util.datetime_from_uuid1(id).isoformat()
-            self[k] = Parameters(name, tag, devices, id, self)
-            
-    def __call__(self):
-        return self.__dict__
+        #self._p = Parameters(name, tag, devices)
+        #for k in devices.keys():
+        #    self.__dict__[k] = getattr(self._p, k)
+        for c in cycles:
+            self.__dict__[str(c)] = Parameters(name, tag, devices, beamstamp, c, self)
+    
+    #def __call__(self):
+    #    return self.__dict__
         
     def _set_caching(self, p):
         h = hashlib.md5((p.device+p.property+p.field).encode('utf-8')).hexdigest()

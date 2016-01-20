@@ -8,20 +8,15 @@ import scipy.io
 from cassandra.cluster import Cluster
 import cassandra.util
 import kepler.connection
+from kepler.udt import Parameter, Cycle, Dataset
 
-class Parameter(object):
-    
-    def __init__(self, d, p, f):
-        self.device = d
-        self.property = p
-        self.field = f
-
-class Converter(object):
+class Converter():
     
     def __init__(self, *args, **kwargs):
         self.path = kwargs['path']
         self.md_name = kwargs['name']
         self.md_tag = str(kwargs['tag'])
+        self.dataset = Dataset(self.md_name, self.md_tag)
         self.session = kepler.connection._session
         self._prepare_insert_statements()
         self.counter_timestamps = 0
@@ -32,9 +27,9 @@ class Converter(object):
         self.bound_statement_real = self.session.prepare(
         """
         INSERT INTO md_data(
-            name,
-            tag,
-            id,
+            dataset,
+            beamstamp,
+            cycle,
             parameter, 
             real_value, 
             type
@@ -43,9 +38,9 @@ class Converter(object):
         self.bound_statement_text = self.session.prepare(
         """
         INSERT INTO md_data(
-            name,
-            tag,
-            id,
+            dataset,
+            beamstamp,
+            cycle,
             parameter, 
             text_value, 
             type
@@ -54,9 +49,9 @@ class Converter(object):
         self.bound_statement_blob = self.session.prepare(
         """
         INSERT INTO md_data(
-            name,
-            tag,
-            id,
+            dataset,
+            beamstamp,
+            cycle,
             parameter, 
             blob_value, 
             type
@@ -72,7 +67,7 @@ class Converter(object):
             # Magic values for 'squeeze_me' and 'struct_as_record'
             data = scipy.io.loadmat(self.path+f, squeeze_me=True, struct_as_record=False)
             d = data['myDataStruct']
-            cyclestamp = datetime.fromtimestamp(d.headerCycleStamps[0]/1000000000)+timedelta(days=0)
+            cyclestamp = datetime.fromtimestamp(d.headerCycleStamps[0]/1000000000)
             self.counter_timestamps += 1
             if self._check_not_present(cyclestamp):
                 self._process_archive(d, cyclestamp)
@@ -80,7 +75,7 @@ class Converter(object):
     def _check_not_present(self, cyclestamp):
         count = self.session.execute("""
         SELECT COUNT(*) FROM md_info WHERE 
-            name = %s and tag = %s and cyclestamp = %s
+            name = %s and tag = %s and beamstamp = %s
         """, (self.md_name, self.md_tag, cyclestamp))
         if count[0][0] > 0:
             return False
@@ -92,12 +87,13 @@ class Converter(object):
         telegram['selector'] = d.cycleName
         telegram['seqnumber'] = str(d.seqNumber)
         self.session.execute("""
-        INSERT INTO md_data(name, tag, id, telegram) VALUES(%s, %s, %s,%s)
-        """,(self.md_name, self.md_tag, self.timeuuid, telegram))
+        UPDATE md_data SET telegram = telegram + {%s: %s} WHERE dataset = %s AND beamstamp = %s
+        """, (self.cycle, telegram, self.dataset, self.beamstamp))
     
     def _process_archive(self, d, cyclestamp):
         comment = d.comment
-        self.timeuuid = cassandra.util.uuid_from_time(cyclestamp) 
+        self.beamstamp = cyclestamp
+        self.cycle = Cycle('PS', 1, cyclestamp)
         for p in d.parameters:
             # Special case for LSA settings
             # Parameter: rmi://lsa/name
@@ -120,16 +116,15 @@ class Converter(object):
             
         # Update the md_info table
         self.session.execute("""
-        INSERT INTO md_info(name, tag, id, comment, cyclestamp)
-        VALUES(%s, %s, %s, %s, %s)
+        INSERT INTO md_info(name, tag, beamstamp, comment)
+        VALUES(%s, %s, %s, %s)
         """, (self.md_name,
               self.md_tag,
-              self.timeuuid,
-              comment,
-              cyclestamp))
+              self.beamstamp,
+              comment))
         self.session.execute("""
-        UPDATE md_info SET tag_info[%s] = %s WHERE name = %s
-        """, (self.md_tag, cyclestamp, self.md_name))
+        UPDATE md_info SET cycles = cycles + {%s} WHERE name = %s AND tag = %s AND beamstamp = %s
+        """, (self.cycle, self.md_name, self.md_tag, self.beamstamp))
         self._insert_telegram(d)
      
     def _convert_single_field(self, r, d):
@@ -189,11 +184,11 @@ class Converter(object):
     def _insert_value(self, device, prop, field, value, t, tf):
         if tf == 'text_value':
             self.session.execute(self.bound_statement_text.bind((
-                self.md_name, self.md_tag, self.timeuuid, Parameter(device, prop, field), value, t)))
+                self.dataset, self.beamstamp, self.cycle, Parameter(device, prop, field), value, t)))
         elif tf == 'blob_value':
             self.session.execute(self.bound_statement_blob.bind((
-                self.md_name, self.md_tag, self.timeuuid, Parameter(device, prop, field), value, t)))
+                self.dataset, self.beamstamp, self.cycle, Parameter(device, prop, field), value, t)))
         elif tf == 'real_value':
             self.session.execute(self.bound_statement_real.bind((
-                self.md_name, self.md_tag, self.timeuuid, Parameter(device, prop, field), value, t)))
+                self.dataset, self.beamstamp, self.cycle, Parameter(device, prop, field), value, t)))
         

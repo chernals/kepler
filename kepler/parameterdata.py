@@ -3,6 +3,7 @@ import kepler
 from kepler.connection import _session
 from kepler import cqlstatements
 from kepler.utils import _convert_object_from_cassandra
+from kepler.udt import Dataset
 
 class ParameterData():
     
@@ -17,12 +18,13 @@ class ParameterData():
             p = self._p
             for c in self._cycles.values():
                 getattr(getattr(getattr(c, p.device), p.property), p.field).value_async()
-    
-    def __init__(self, name, tag, p, id, type, cycles):
+        
+    def __init__(self, name, tag, p, beamstamp, cycle, type, cycles):
         self._p = p
         self._name = name
         self._tag = tag
-        self._id = id
+        self._beamstamp = beamstamp
+        self._cycle = cycle
         self._type = type
         self._value = None
         self._cycles = cycles
@@ -39,7 +41,7 @@ class ParameterData():
                         self._cycles._set_caching(self._p)
                         ParameterData.cachingThread(self._cycles, self._p).start()
             r = _session.execute(cqlstatements._bound_statements['parameter_data'].bind(
-                (self._name, self._tag, self._id, self._p)))
+                (Dataset(self._name, self._tag), self._beamstamp, self._cycle, self._p)))
             r = r[0]
             self._value = _convert_object_from_cassandra(r[0], [r[1], r[2], r[3]])
         return self._value

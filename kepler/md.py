@@ -1,12 +1,12 @@
 import threading
 import numpy as np
 
-from kepler.parameter import Parameter
+from kepler.udt import Parameter, Cycle, Dataset
 from kepler.mdnames import MDNames
 from kepler.mdtags import MDTags
 from kepler.mdusers import MDUsers
 from kepler.mdcomment import MDComment
-from kepler.cycles import Cycles
+from kepler.beams import Beams
 from kepler.connection import _session
 
 class MD():
@@ -25,7 +25,11 @@ class MD():
 
         return object.__new__(cls)
             
-    def __init__(self, name, tag=None): 
+    def __init__(self, name, tag=None):
+        """Initialize and load metadata for a MD object.
+        
+        If the tag is not given the object will be empty and the rest is delayed.
+        """
         self.name = name
         self._tag = tag
         self.users = MDUsers(_session, self.name)
@@ -35,10 +39,17 @@ class MD():
        
     @property
     def tag(self):
+        """Return the tag name associated with the MD object.
+        
+        """
         return self._tag
        
     @tag.setter 
     def tag(self, value):
+        """Associate a tag name with a MD object.
+        
+        This triggers the initialization of the metadata.
+        """
         if value not in getattr(MD.names, str(self.name)).tags:
             print('Tag not found for the MD.')
             return None
@@ -50,13 +61,15 @@ class MD():
     def _tag_init(self):
         if self._tag is None:
             return
-        self._ids = self._get_ids()
+        self._beams = self._get_beams()
         self._devices = self._get_devices()
-        self.cycles = Cycles(self.name, self.tag, self.devices, self._ids)
-        print("MD found with %d cycles and %d devices." % (len(self._ids), len(self._devices.keys())))
+        self.beams = Beams(self.name, self.tag, self.devices, self._beams)
+        print("MD found with %d beams (%s cycles each)." % (len(self._beams), len(self._devices.keys())))
         
     def _tag_clear(self):
-        self._ids = None
+        """
+        """
+        self._beams = None
         self._devices = None
         self._cycles = None
             
@@ -64,29 +77,39 @@ class MD():
     def devices(self):
         return self._devices
         
-    def _get_ids(self):
-        ids = []
+    def _get_beams(self):
+        """Return a list of beamstamps for a given dataset and the cycles for each beamstamp.
+        
+        Simple query where we `select` the `beamstamp` and the `cycles` set.
+        """
+        beams = {}
         rows = _session.execute("""
-        SELECT id FROM md_info WHERE name=%s AND tag=%s
+        SELECT beamstamp, cycles FROM md_info WHERE name=%s AND tag=%s
         """, (str(self.name), self.tag))
         for r in rows:
-            ids.append(r[0])
-        return ids    
-    
+            beams[r[0]] = list(r[1])
+        return beams
+        
     def _get_devices(self):
-        id = self._ids[0]
-        rows = _session.execute("""
-        SELECT parameter, type FROM md_data WHERE name=%s AND tag=%s AND id=%s
-        """, (str(self.name), self.tag, id))
         devices = {}
-        for r in rows:
-            p = r[0]
-            t = r[1]
-            if devices.get(p.device) is None:
-                devices[p.device] = {p.property: {p.field: t}}
-            else:
-                if devices[p.device].get(p.property) is None:
-                    devices[p.device][p.property] = {p.field: t}
+        # We assume the beams are all the same in a given dataset
+        beamstamp = list(self._beams.keys())[0]
+        cycles = self._beams[beamstamp]
+        # Get the device list for each cycle in the beam
+        for cycle in cycles:
+            rows = _session.execute("""
+            SELECT parameter, type FROM md_data WHERE dataset=%s AND beamstamp = %s and cycle = %s
+            """, (Dataset(self.name, self.tag), beamstamp, cycle))
+            dev = {}
+            for r in rows:
+                p = r[0]
+                t = r[1]
+                if dev.get(p.device) is None:
+                    dev[p.device] = {p.property: {p.field: t}}
                 else:
-                    devices[p.device][p.property][p.field] = t
+                    if dev[p.device].get(p.property) is None:
+                        dev[p.device][p.property] = {p.field: t}
+                    else:
+                        dev[p.device][p.property][p.field] = t
+            devices[str(cycle)] = dev
         return devices
