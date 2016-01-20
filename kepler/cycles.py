@@ -4,15 +4,12 @@ import cassandra.util
 from kepler.parameters import Parameters
 
 class Cycles():
-    # Cycles(name, tag, devices, c, beams[c])
-    def __init__(self, name, tag, devices, beamstamp, cycles):
+
+    def __init__(self, name, tag, devices, cycles, beamstamp=None):
         self.__dict__ = {}
         self._caching = {}
-        #self._p = Parameters(name, tag, devices)
-        #for k in devices.keys():
-        #    self.__dict__[k] = getattr(self._p, k)
         for c in cycles:
-            self.__dict__[str(c)] = Parameters(name, tag, devices, beamstamp, c, self)
+            self.__dict__[str(c)] = Parameters(name, tag, devices, c, beamstamp, self)
     
     #def __call__(self):
     #    return self.__dict__

@@ -4,8 +4,8 @@ from kepler.parameterdata import ParameterData
 from kepler.parametertimeseries import ParameterTimeseries
 
 class Parameters():
-    #Parameters(name, tag, devices, beamstamp, c, self)
-    def __init__(self, name, tag, devices, beamstamp=None, cycle=None, cycles=None):
+
+    def __init__(self, name, tag, devices, cycle, beamstamp=None, cycles=None):
         self._name = name
         self._tag = tag
         self._devices = devices

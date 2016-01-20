@@ -4,6 +4,7 @@ import cassandra.util
 from kepler import cqlstatements
 from kepler.connection import _session
 from kepler.utils import _convert_object_from_cassandra
+from kepler.udt import Dataset
 
 class ParameterTimeseries():
     def __init__(self, name, tag, p):
@@ -18,9 +19,9 @@ class ParameterTimeseries():
             start_time = time.time()
             self._values = []
             rows = _session.execute(cqlstatements._bound_statements['parameter_timeseries'].bind(
-                (self._name, self._tag, self._p,)))
+                (Dataset(self._name, self._tag), self._p,)))
             for r in rows:
-                cyclestamp = cassandra.util.datetime_from_uuid1(r[4])
+                cyclestamp = r[4].cyclestamp
                 self._values.append([cyclestamp, _convert_object_from_cassandra(r[0], [r[1], r[2], r[3]])])
             self._values = np.array(sorted(list(self._values), key=lambda x: x[0])) 
             print("Data queried in %f seconds." % (time.time()-start_time,))
