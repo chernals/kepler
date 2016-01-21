@@ -7,3 +7,5 @@ __pycache__
 .ipynb_checkpoints/Untitled-checkpoint.ipynb
 
 .ipynb_checkpoints/VarilogExample-checkpoint.ipynb
+
+*.pyc

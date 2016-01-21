@@ -92,7 +92,7 @@ class MD():
         
     def _get_devices(self):
         devices = {}
-        # We assume the beams are all the same in a given dataset
+        # We assume the devices are all the same in a given dataset
         beamstamp = list(self._beams.keys())[0]
         cycles = self._beams[beamstamp]
         # Get the device list for each cycle in the beam

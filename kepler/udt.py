@@ -10,7 +10,9 @@ class Parameter(object):
         self.field = field
                 
 class Cycle():
-    
+    """
+    Cassandra User Defined Type (UDT) for kepler.md_data(cycle).
+    """
     def __init__(self, machine, injection, cyclestamp):
         #super().__init__(self, cyclestamp)
         self.machine = machine
@@ -24,7 +26,9 @@ class Cycle():
         return "%s_%s" % (self.machine, self.injection)
     
 class Dataset(object):
-    
+    """
+    Cassandra User Defined Type (UDT) for kepler.md_data(dataset).
+    """
     def __init__(self, name, tag):
         self.name = name
         self.tag = tag

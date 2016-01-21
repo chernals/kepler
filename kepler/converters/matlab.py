@@ -94,6 +94,20 @@ class Converter():
         comment = d.comment
         self.beamstamp = cyclestamp
         self.cycle = Cycle('PS', 1, cyclestamp)
+        
+        # Update the md_info table
+        self.session.execute("""
+        INSERT INTO md_info(name, tag, beamstamp, comment)
+        VALUES(%s, %s, %s, %s)
+        """, (self.md_name,
+              self.md_tag,
+              self.beamstamp,
+              comment))
+        self.session.execute("""
+        UPDATE md_info SET cycles = cycles + {%s} WHERE name = %s AND tag = %s AND beamstamp = %s
+        """, (self.cycle, self.md_name, self.md_tag, self.beamstamp))
+        self._insert_telegram(d)
+        
         for p in d.parameters:
             # Special case for LSA settings
             # Parameter: rmi://lsa/name
@@ -113,19 +127,6 @@ class Converter():
             if r:
                 self._convert_whole_property(r, d)
                 continue
-            
-        # Update the md_info table
-        self.session.execute("""
-        INSERT INTO md_info(name, tag, beamstamp, comment)
-        VALUES(%s, %s, %s, %s)
-        """, (self.md_name,
-              self.md_tag,
-              self.beamstamp,
-              comment))
-        self.session.execute("""
-        UPDATE md_info SET cycles = cycles + {%s} WHERE name = %s AND tag = %s AND beamstamp = %s
-        """, (self.cycle, self.md_name, self.md_tag, self.beamstamp))
-        self._insert_telegram(d)
      
     def _convert_single_field(self, r, d):
         device = r.group(1)

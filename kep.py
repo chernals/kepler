@@ -132,12 +132,16 @@ def push(ctx, name, tag, path, format):
 @click.argument('tag')
 @click.pass_context
 def delete(ctx, name, tag):
+    beamstamps = kepler.connection._session.execute("""
+    SELECT beamstamp FROM md_info WHERE name = %s AND tag = %s
+    """, (name, tag))
+    for bs in beamstamps:
+        kepler.connection._session.execute("""
+        DELETE FROM md_data WHERE dataset = %s and beamstamp = %s
+        """, (Dataset(name, tag), bs[0]))
     kepler.connection._session.execute("""
     DELETE FROM md_info WHERE name = %s AND tag = %s
     """, (name, tag))
-    kepler.connection._session.execute("""
-    DELETE FROM md_data WHERE dataset = %s
-    """, (Dataset(name, tag),))
     
 @md.command()
 @click.option('--user')
