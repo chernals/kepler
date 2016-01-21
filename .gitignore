@@ -1,3 +1,9 @@
 kepler.egg-info
 kepler.ics
 __pycache__
+
+.ipynb_checkpoints/KeplerExample-checkpoint.ipynb
+
+.ipynb_checkpoints/Untitled-checkpoint.ipynb
+
+.ipynb_checkpoints/VarilogExample-checkpoint.ipynb
