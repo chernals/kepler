@@ -1,8 +1,10 @@
+from kepler.connection import _session
+
 class MDTags(list):
     
-    def __init__(self, session, name):
+    def __init__(self, name):
         self._name = name
-        rows = session.execute("""
+        rows = _session.execute("""
         SELECT tag FROM md_info WHERE name = %s
         """, (self._name,))
         tags = set()

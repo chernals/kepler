@@ -10,7 +10,7 @@ from kepler.beams import Beams
 from kepler.connection import _session
 
 class MD():
-    names = MDNames(_session)
+    names = MDNames()
     
     def __new__(cls, *args, **kwargs):
         """

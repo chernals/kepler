@@ -38,8 +38,6 @@ CREATE TABLE kepler.md_info(
 	PRIMARY KEY ((name), tag, beamstamp)
 ) WITH CLUSTERING ORDER BY (tag ASC, beamstamp DESC);
 
---CREATE INDEX beamstamp_idx on kepler.md_info(id);
-
 -- Payload data for MD's
 CREATE TABLE kepler.md_data(
 	dataset           FROZEN<dataset>,
@@ -53,10 +51,6 @@ CREATE TABLE kepler.md_data(
 	type              TEXT,
    	PRIMARY KEY ((dataset, beamstamp), cycle, parameter)
 ) WITH CLUSTERING ORDER BY (cycle ASC, parameter ASC);
-
--- Allow querying by dataset
--- Usefull for consistency check
-CREATE INDEX dataset_idx ON kepler.md_data(dataset);
 
 -- Allow querying by parameter
 -- These are 'lightweight' timeseries

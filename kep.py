@@ -5,6 +5,7 @@ import click
 from cassandra.cluster import Cluster
 import kepler.connection
 import kepler.converters.matlab
+from kepler.udt import Dataset
 
 @click.group()
 @click.option('--debug/--no-debug', default=False, help='Set the Verbosity of the output')
@@ -125,6 +126,18 @@ def push(ctx, name, tag, path, format):
         exit()
     if format is 'matlab':
         conv = kepler.converters.matlab.Converter(name=name, tag=tag, path=path)
+        
+@md.command()
+@click.argument('name')
+@click.argument('tag')
+@click.pass_context
+def delete(ctx, name, tag):
+    kepler.connection._session.execute("""
+    DELETE FROM md_info WHERE name = %s AND tag = %s
+    """, (name, tag))
+    kepler.connection._session.execute("""
+    DELETE FROM md_data WHERE dataset = %s
+    """, (Dataset(name, tag),))
     
 @md.command()
 @click.option('--user')
