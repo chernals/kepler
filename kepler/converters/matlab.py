@@ -11,12 +11,19 @@ import kepler.connection
 from kepler.udt import Parameter, Cycle, Dataset
 
 class Converter():
+    """
+    Import Matlab-Japc .mat files onto Kepler.
+    All the device/Property#field are processed.
+    Metadata (timing user, etc.) go in the 'telegram' column.
+    
+    """
     
     def __init__(self, *args, **kwargs):
         self.path = kwargs['path']
         self.md_name = kwargs['name']
         self.md_tag = str(kwargs['tag'])
         self.dataset = Dataset(self.md_name, self.md_tag)
+        self.machine = kwargs['machine']
         self.session = kepler.connection._session
         self._prepare_insert_statements()
         self.counter_timestamps = 0
@@ -60,7 +67,7 @@ class Converter():
 
     def _load_archive(self):
         matfiles = os.listdir(self.path)
-        for f in matfiles:
+        for f in matfiles[0:1]:
             if not f.endswith('.mat'):
                 continue
             print("Processing %s" % f)
@@ -69,18 +76,39 @@ class Converter():
             d = data['myDataStruct']
             cyclestamp = datetime.fromtimestamp(d.headerCycleStamps[0]/1000000000)
             self.counter_timestamps += 1
-            if self._check_not_present(cyclestamp):
+            if self._do_import_cycle_in_beam(cyclestamp):
                 self._process_archive(d, cyclestamp)
     
-    def _check_not_present(self, cyclestamp):
-        count = self.session.execute("""
-        SELECT COUNT(*) FROM md_info WHERE 
+    def _do_import_cycle_in_beam(self, cyclestamp):
+        """
+        Check if beamstamp is already present in the database.
+        If it is not check to which machine and injection the cycle corresponds.
+        If it is already present, abort.
+        """
+        rows = self.session.execute("""
+        SELECT beamstamp, cycles FROM md_info WHERE 
             name = %s and tag = %s and beamstamp = %s
         """, (self.md_name, self.md_tag, cyclestamp))
-        if count[0][0] > 0:
-            return False
-        else:
+        if not rows.current_rows:
+            self.cycle = Cycle(self.machine, 1, cyclestamp)
             return True
+        for r in rows:
+            beamstamp = r[0]
+            cycles = r[1]
+            for c in cycles:
+                print(self.machine)
+                if c.cyclestamp == cyclestamp and c.machine == self.machine:
+                    return False
+                else:
+                    injection = 1
+                    if c.machine == self.machine:
+                        if cyclestamp >= c.machine:
+                            injection = c.injection + 1
+                        else:
+                            # Should reorder the whole thing
+                            pass
+                    self.cycle = Cycle(self.machine, 1, cyclestamp)
+                    return True
             
     def _insert_telegram(self, d):
         telegram = {}
@@ -93,7 +121,6 @@ class Converter():
     def _process_archive(self, d, cyclestamp):
         comment = d.comment
         self.beamstamp = cyclestamp
-        self.cycle = Cycle('PS', 1, cyclestamp)
         
         # Update the md_info table
         self.session.execute("""

@@ -14,7 +14,6 @@ class Cycle():
     Cassandra User Defined Type (UDT) for kepler.md_data(cycle).
     """
     def __init__(self, machine, injection, cyclestamp):
-        #super().__init__(self, cyclestamp)
         self.machine = machine
         self.injection = injection
         self.cyclestamp = cyclestamp
@@ -24,6 +23,12 @@ class Cycle():
         
     def __str__(self):
         return "%s_%s" % (self.machine, self.injection)
+        
+    def __lt__(self, other):
+        return self.cyclestamp < other.cyclestamp
+        
+    def __gt__(self, other):
+        return self.cyclestamp > other.cyclestamp
     
 class Dataset(object):
     """

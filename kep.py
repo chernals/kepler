@@ -108,9 +108,10 @@ def adduser(ctx, name, user):
 @click.argument('name')
 @click.argument('tag')
 @click.argument('path')
+@click.option('--machine', default='PS')
 @click.option('--format', default='matlab')
 @click.pass_context
-def push(ctx, name, tag, path, format):
+def push(ctx, name, tag, path, machine, format):
     rows = kepler.connection._session.execute("""
     SELECT name FROM md_info WHERE name = %s
     """, (name,))
@@ -125,7 +126,7 @@ def push(ctx, name, tag, path, format):
         click.echo("Only Matlab pulls are supported.")
         exit()
     if format is 'matlab':
-        conv = kepler.converters.matlab.Converter(name=name, tag=tag, path=path)
+        conv = kepler.converters.matlab.Converter(name=name, tag=tag, path=path, machine=machine)
         
 @md.command()
 @click.argument('name')
