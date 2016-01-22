@@ -83,11 +83,9 @@ class MD():
         Simple query where we `select` the `beamstamp` and the `cycles` set.
         """
         beams = {}
-        print('hello')
         rows = _session.execute("""
         SELECT beamstamp, cycles FROM md_info WHERE name=%s AND tag=%s
         """, (str(self.name), self.tag))
-        print('bye')
         for r in rows:
             beams[r[0]] = list(r[1])
         return beams

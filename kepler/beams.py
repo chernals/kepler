@@ -12,4 +12,8 @@ class Beams(dict):
             self[beamstamp.isoformat()] = Cycles(name, tag, devices, beams[beamstamp], beamstamp)
             
         for cycle in devices.keys():
-            self.__dict__[str(cycle)] = Parameters(name, tag, devices, cycle)
+            cc = list(beams.values())[0][0]
+            for c in list(beams.values())[0]:
+                if str(c) == cycle:
+                    cc = c
+            self.__dict__[cycle] = Parameters(name, tag, devices, cc)

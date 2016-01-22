@@ -32,7 +32,7 @@ class Parameters():
                     self.__cache[d][p] = SmartDict()
                     for f in self._devices[str(self._cycle)][d][p].keys():
                         if self._beamstamp is None:
-                            self.__cache[d][p][f] = ParameterTimeseries(self._name, self._tag, Parameter(d,p,f))
+                            self.__cache[d][p][f] = ParameterTimeseries(self._name, self._tag, Parameter(d,p,f), self._cycle)
                         else:
                             self.__cache[d][p][f] = ParameterData(self._name, self._tag, Parameter(d,p,f), self._beamstamp, self._cycle, self._devices[str(self._cycle)][d][p][f], self._cycles)
         return self.__cache 

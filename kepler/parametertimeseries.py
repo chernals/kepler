@@ -7,10 +7,11 @@ from kepler.utils import _convert_object_from_cassandra
 from kepler.udt import Dataset
 
 class ParameterTimeseries():
-    def __init__(self, name, tag, p):
+    def __init__(self, name, tag, p, c):
         self._p = p
         self._name = name
         self._tag = tag
+        self._cycle = c
         self._values = None
         
     @property
@@ -21,6 +22,8 @@ class ParameterTimeseries():
             rows = _session.execute(cqlstatements._bound_statements['parameter_timeseries'].bind(
                 (Dataset(self._name, self._tag), self._p,)))
             for r in rows:
+                if r[4].machine != self._cycle.machine or r[4].injection != self._cycle.injection:
+                    continue
                 cyclestamp = r[4].cyclestamp
                 self._values.append([cyclestamp, _convert_object_from_cassandra(r[0], [r[1], r[2], r[3]])])
             self._values = np.array(sorted(list(self._values), key=lambda x: x[0])) 
