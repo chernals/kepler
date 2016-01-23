@@ -67,7 +67,7 @@ class Converter():
 
     def _load_archive(self):
         matfiles = os.listdir(self.path)
-        for f in matfiles[0:1]:
+        for f in matfiles:
             if not f.endswith('.mat'):
                 continue
             print("Processing %s" % f)
@@ -96,7 +96,6 @@ class Converter():
             beamstamp = r[0]
             cycles = r[1]
             for c in cycles:
-                print(self.machine)
                 if c.cyclestamp == cyclestamp and c.machine == self.machine:
                     return False
                 else:

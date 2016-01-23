@@ -15,3 +15,5 @@ kepler/__pycache__
 *.pyc
 
 *.pyc
+
+kepler/converters/__pycache__/matlab.cpython-35.pyc
