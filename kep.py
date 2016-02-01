@@ -2,7 +2,7 @@ import os
 import getpass
 from datetime import datetime
 import click
-from cassandra.cluster import Cluster
+import kepler.mdnames
 import kepler.connection
 import kepler.converters.matlab
 from kepler.udt import Dataset
@@ -31,17 +31,8 @@ def info(ctx):
     
     This will connect to Cassandra and provide summary information.
     """
-    rows = kepler.connection._session.execute("""
-    SELECT COUNT(*) FROM md_info
-    """)
-    for r in rows:
-        print("Declared MD's: %d" % r)
-    rows = session.execute("""
-    SELECT COUNT(*) FROM md_data
-    """)
-    for r in rows:
-        print("MD cycles stored: %d" % r)
-    pass
+    names = kepler.mdnames.MDNames()
+    print("%d MD\'s found." % len(names))
     
 @cli.group()
 def md():

@@ -77,6 +77,7 @@ class Converter():
             cyclestamp = datetime.fromtimestamp(d.headerCycleStamps[0]/1000000000)
             self.counter_timestamps += 1
             if self._do_import_cycle_in_beam(cyclestamp):
+                print("Doing the import")
                 self._process_archive(d, cyclestamp)
     
     def _do_import_cycle_in_beam(self, cyclestamp):
@@ -101,7 +102,7 @@ class Converter():
                 else:
                     injection = 1
                     if c.machine == self.machine:
-                        if cyclestamp >= c.machine:
+                        if cyclestamp >= c.cyclestamp:
                             injection = c.injection + 1
                         else:
                             # Should reorder the whole thing
