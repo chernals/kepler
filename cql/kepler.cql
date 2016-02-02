@@ -2,7 +2,7 @@
 --  {'class' : 'NetworkTopologyStrategy', 'CCR': '3'};
 
 CREATE KEYSPACE kepler 
-	WITH replication = {'class': 'SimpleStrategy', 'replication_factor': '1'}
+	WITH replication = {'class': 'NetworkTopologyStrategy', 'CCR': '3', '513': '0'}
 	AND durable_writes = true;
 
 -- Composed type for Dataset(name, tag)
