@@ -1,6 +1,7 @@
 import os
 import cassandra.cluster
 import cassandra.policies
+from cassandra import ConsistencyLevel
 from cassandra.auth import PlainTextAuthProvider
 from kepler.udt import Parameter, Cycle, Dataset
 import logging
@@ -19,6 +20,7 @@ def _try_connect_to_cluster(hosts, policy=None):
     else:
         cluster = cassandra.cluster.Cluster(hosts, auth_provider=auth_provider)
     session = cluster.connect('kepler')
+    session.default_consistency_level = ConsistencyLevel.ONE
     cluster.register_user_type('kepler', 'parameter', Parameter)
     cluster.register_user_type('kepler', 'cycle', Cycle)
     cluster.register_user_type('kepler', 'dataset', Dataset)
