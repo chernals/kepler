@@ -28,6 +28,7 @@ class Parameters():
     def _cache(self):    
         if self.__cache is None:
             self.__cache = {}
+            print("hello there")
             if beamstamp is not None:
                 self.__cache['telegram'] = self.get_telegram()
             for d in self._devices[str(self._cycle)].keys():
