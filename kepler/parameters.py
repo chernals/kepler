@@ -2,6 +2,8 @@ from kepler.smartdict import SmartDict
 from kepler.udt import Parameter
 from kepler.parameterdata import ParameterData
 from kepler.parametertimeseries import ParameterTimeseries
+from kepler.connection import _session
+from kepler.udt import Dataset
 
 class Parameters():
 
@@ -15,6 +17,7 @@ class Parameters():
         self._cycles = cycles
         if beamstamp is None:
             self._cache
+        self.add_telegram()
         
     def __dir__(self):
         return self._cache.keys()
@@ -36,3 +39,10 @@ class Parameters():
                         else:
                             self.__cache[d][p][f] = ParameterData(self._name, self._tag, Parameter(d,p,f), self._beamstamp, self._cycle, self._devices[str(self._cycle)][d][p][f], self._cycles)
         return self.__cache 
+        
+    def self.add_telegram():
+        r = _session.execute("""
+        SELECT telegram FROM md_data WHERE dataset=%s AND beamstamp=%s
+        """, (Dataset(self._name, self._tag), self._beamstamp)
+        )
+        self.telegram = r[0]
