@@ -28,9 +28,9 @@ class Parameters():
     def _cache(self):    
         if self.__cache is None:
             self.__cache = {}
-            print("hello there")
-            if beamstamp is not None:
+            if self._beamstamp is not None:
                 self.__cache['telegram'] = self.get_telegram()
+                self.__cache['cyclestamp'] = self._cycle.cyclestamp
             for d in self._devices[str(self._cycle)].keys():
                 self.__cache[d] = SmartDict()
                 for p in self._devices[str(self._cycle)][d].keys():
@@ -42,9 +42,9 @@ class Parameters():
                             self.__cache[d][p][f] = ParameterData(self._name, self._tag, Parameter(d,p,f), self._beamstamp, self._cycle, self._devices[str(self._cycle)][d][p][f], self._cycles)
         return self.__cache 
         
-    def self.get_telegram():
+    def get_telegram(self):
         r = _session.execute("""
         SELECT telegram FROM md_data WHERE dataset=%s AND beamstamp=%s
         """, (Dataset(self._name, self._tag), self._beamstamp)
         )
-        return r[0]
+        return dict(r[0][0][self._cycle])
